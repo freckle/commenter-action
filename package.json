@@ -1,0 +1,35 @@
+{
+  "name": "commenter",
+  "version": "0.0.0",
+  "description": "Comments on pull requests by files altered",
+  "main": "lib/main.js",
+  "scripts": {
+    "build": "tsc && ncc build lib/main.js",
+    "format": "prettier --write \"**/*.ts\"",
+    "format-check": "prettier --check \"**/*.ts\"",
+    "test": "jest"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/freckle/commenter-action.git"
+  },
+  "author": "Freckle",
+  "license": "MIT",
+  "dependencies": {
+    "@actions/core": "^1.4.0",
+    "@actions/github": "^5.0.0",
+    "js-yaml": "^4.1.0",
+    "minimatch": "^3.0.4"
+  },
+  "devDependencies": {
+    "@types/jest": "^26.0.23",
+    "@types/js-yaml": "^4.0.1",
+    "@types/minimatch": "^3.0.4",
+    "@types/node": "^15.12.2",
+    "@vercel/ncc": "^0.28.6",
+    "jest": "^27.0.4",
+    "prettier": "^2.3.1",
+    "ts-jest": "^27.0.3",
+    "typescript": "^4.3.4"
+  }
+}

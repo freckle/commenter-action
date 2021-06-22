@@ -1,0 +1,5 @@
+touched-a-pdf-file:
+  paths:
+    - '*.pdf'
+  body: |
+    The comment body
