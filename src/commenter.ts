@@ -31,6 +31,12 @@ export async function run() {
     if (error instanceof Error) {
       core.error(error);
       core.setFailed(error.message);
+    } else if (typeof error === 'string'){
+      core.error(error);
+      core.setFailed(error);
+    } else {
+      core.error("Non-Error exception");
+      core.setFailed("Non-Error exception");
     }
   }
 }
