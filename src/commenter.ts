@@ -27,8 +27,11 @@ export async function run() {
       addComment(client, body);
     }
   } catch (error) {
-    core.error(error);
-    core.setFailed(error.message);
+    // Refine unknown type
+    if (error instanceof Error) {
+      core.error(error);
+      core.setFailed(error.message);
+    }
   }
 }
 
