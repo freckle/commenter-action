@@ -52,6 +52,28 @@ jobs:
 
 See [`action.yml`](./action.yml).
 
+## Additional Options
+
+You can also match based on specific file changes by supplying the `where`
+configuration key.
+
+For example, if you wanted to comment on any changes that contain the word
+"unsafe" you could supply a YAML configuration like the following
+
+```yaml
+UnsafeMentionedInCode:
+  paths:
+    - "backend/**/*.hs"
+  where:
+    patch:
+      additions_or_deletions:
+        contain:
+          - unsafe
+  body: |
+    :wave: Hi, I see a mention of "unsafe" in Haskell code. If you removed it,
+    good going! If you added it, please consider finding a safer alternative!
+```
+
 ## Acknowledgements
 
 This action was highly inspired by (and began as a copy of)
