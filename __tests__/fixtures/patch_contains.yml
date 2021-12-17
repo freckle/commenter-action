@@ -1,6 +1,6 @@
 patch-matches-within-file:
   paths:
-    - '*.sql'
+    - "*.sql"
   where:
     patch:
       additions_or_deletions:
