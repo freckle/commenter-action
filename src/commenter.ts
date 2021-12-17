@@ -12,12 +12,12 @@ export async function run() {
 
     const client: ClientType = github.getOctokit(token);
     const configs = await getConfigurations(client, configPath);
-    const changedFiles: string[] = await getChangedFiles(client);
+    const changedFiles: ChangedFile[] = await getChangedFiles(client);
 
     let body: string | null = null;
 
     for (const [_name, config] of Object.entries(configs)) {
-      if (matchAny(changedFiles, config.paths)) {
+      if (matches(changedFiles, config)) {
         body = config.body;
         break; // first match wins
       }
@@ -31,7 +31,7 @@ export async function run() {
     if (error instanceof Error) {
       core.error(error);
       core.setFailed(error.message);
-    } else if (typeof error === 'string'){
+    } else if (typeof error === "string") {
       core.error(error);
       core.setFailed(error);
     } else {
@@ -41,7 +41,9 @@ export async function run() {
   }
 }
 
-async function getChangedFiles(client: ClientType): Promise<string[]> {
+type ChangedFile = { filename: string; patch: string };
+
+async function getChangedFiles(client: ClientType): Promise<ChangedFile[]> {
   const listFilesOptions = client.rest.pulls.listFiles.endpoint.merge({
     owner: github.context.repo.owner,
     repo: github.context.repo.repo,
@@ -49,11 +51,15 @@ async function getChangedFiles(client: ClientType): Promise<string[]> {
   });
 
   const listFilesResponse = await client.paginate(listFilesOptions);
-  const changedFiles = listFilesResponse.map((f: any) => f.filename);
+  const changedFiles = listFilesResponse.map((f: any) => ({
+    filename: f.filename,
+    patch: f.patch,
+  }));
 
   core.debug("found changed files:");
   for (const file of changedFiles) {
-    core.debug("  " + file);
+    core.debug(" file: " + file.filename);
+    core.debug(" patch (first 100): " + file.patch.slice(0, 100));
   }
 
   return changedFiles;
@@ -68,9 +74,20 @@ async function addComment(client: ClientType, body: string): Promise<void> {
   });
 }
 
+// For now, since there's only 1 type of `where` match we can do, the object is
+// all-or-nothing.
+type ConfigurationWhereClause = {
+  patch: {
+    additions_or_deletions: {
+      contain: string[];
+    };
+  };
+};
+
 type Configuration = {
   paths: string[];
   body: string;
+  where?: ConfigurationWhereClause;
 };
 
 async function getConfigurations(
@@ -97,12 +114,15 @@ async function fetchContent(client: ClientType, path: string): Promise<string> {
   return Buffer.from(response.data.content, response.data.encoding).toString();
 }
 
-function matchAny(changedFiles: string[], globs: string[]): boolean {
-  const matchers = globs.map((g) => new Minimatch(g));
+function matches(changedFiles: ChangedFile[], config: Configuration): boolean {
+  const matchers = config.paths.map((g) => new Minimatch(g));
 
   for (const changedFile of changedFiles) {
     for (const matcher of matchers) {
-      if (matcher.match(changedFile)) {
+      if (
+        matcher.match(changedFile.filename) &&
+        (!config.where || whereIsMet(changedFile.patch, config.where))
+      ) {
         return true;
       }
     }
@@ -110,3 +130,8 @@ function matchAny(changedFiles: string[], globs: string[]): boolean {
 
   return false;
 }
+
+const whereIsMet = (patch: string, where: ConfigurationWhereClause) =>
+  where.patch.additions_or_deletions.contain.some((needle) =>
+    patch.includes(needle)
+  );
