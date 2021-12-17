@@ -1,5 +1,6 @@
 touched-a-pdf-file:
-  paths:
-    - '*.pdf'
+  where:
+    path:
+      matches: "*.pdf"
   body: |
     The comment body

@@ -6,8 +6,9 @@
 
 ```yaml
 Backend:
-  paths:
-    - "backend/**/*"
+  where:
+    path:
+      matches: "backend/**/*"
   body: |
     :wave: You've changed Backend code, please:
 
@@ -16,8 +17,9 @@ Backend:
     - [ ] And that
 
 Frontend:
-  paths:
-    - "frontend/**/*"
+  where:
+    path:
+      matches: "frontend/**/*"
   body: |
     :wave: You've changed Frontend code, please:
 
@@ -54,17 +56,17 @@ See [`action.yml`](./action.yml).
 
 ## Additional Options
 
-You can also match based on specific file changes by supplying the `where`
-configuration key.
+You can also match based on specific file changes by supplying the
+`additions_or_deletions` `where`-clause configuration key.
 
 For example, if you wanted to comment on any changes that contain the word
 "unsafe" you could supply a YAML configuration like the following
 
 ```yaml
 UnsafeMentionedInCode:
-  paths:
-    - "backend/**/*.hs"
   where:
+    path:
+      matches: "backend/**/*.hs"
     patch:
       additions_or_deletions:
         contain:

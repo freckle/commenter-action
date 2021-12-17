@@ -17,7 +17,7 @@ export async function run() {
     let body: string | null = null;
 
     for (const [_name, config] of Object.entries(configs)) {
-      if (matches(changedFiles, config)) {
+      if (matches(changedFiles, config.where)) {
         body = config.body;
         break; // first match wins
       }
@@ -74,20 +74,18 @@ async function addComment(client: ClientType, body: string): Promise<void> {
   });
 }
 
-// For now, since there's only 1 type of `where` match we can do, the object is
-// all-or-nothing.
 type ConfigurationWhereClause = {
-  patch: {
-    additions_or_deletions: {
-      contain: string[];
-    };
+  path: {
+    matches: string;
+  };
+  additions_or_deletions?: {
+    contain: string[];
   };
 };
 
 type Configuration = {
-  paths: string[];
   body: string;
-  where?: ConfigurationWhereClause;
+  where: ConfigurationWhereClause;
 };
 
 async function getConfigurations(
@@ -114,24 +112,19 @@ async function fetchContent(client: ClientType, path: string): Promise<string> {
   return Buffer.from(response.data.content, response.data.encoding).toString();
 }
 
-function matches(changedFiles: ChangedFile[], config: Configuration): boolean {
-  const matchers = config.paths.map((g) => new Minimatch(g));
+function matches(
+  changedFiles: ChangedFile[],
+  where: ConfigurationWhereClause
+): boolean {
+  const matcher = new Minimatch(where.path.matches);
 
-  for (const changedFile of changedFiles) {
-    for (const matcher of matchers) {
-      if (
-        matcher.match(changedFile.filename) &&
-        (!config.where || whereIsMet(changedFile.patch, config.where))
-      ) {
-        return true;
-      }
-    }
-  }
-
-  return false;
+  return changedFiles.some(
+    ({ filename, patch }) =>
+      matcher.match(filename) &&
+      (!where.additions_or_deletions ||
+        patchContains(patch, where.additions_or_deletions.contain))
+  );
 }
 
-const whereIsMet = (patch: string, where: ConfigurationWhereClause) =>
-  where.patch.additions_or_deletions.contain.some((needle) =>
-    patch.includes(needle)
-  );
+const patchContains = (patch: string, needles: string[]) =>
+  needles.some((needle) => patch.includes(needle));
