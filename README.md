@@ -67,10 +67,9 @@ UnsafeMentionedInCode:
   where:
     path:
       matches: "backend/**/*.hs"
-    patch:
-      additions_or_deletions:
-        contain:
-          - unsafe
+    additions_or_deletions:
+      contain:
+        - unsafe
   body: |
     :wave: Hi, I see a mention of "unsafe" in Haskell code. If you removed it,
     good going! If you added it, please consider finding a safer alternative!
