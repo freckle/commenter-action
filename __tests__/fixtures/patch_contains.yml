@@ -1,0 +1,9 @@
+patch-matches-within-file:
+  where:
+    path:
+      matches: "*.sql"
+    additions_or_deletions:
+      contain:
+        - TRUNCATE
+  body: |
+    Looks like you changed a TRUNCATE line...
