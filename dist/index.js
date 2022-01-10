@@ -85,10 +85,14 @@ function getChangedFiles(client) {
             pull_number: github.context.issue.number,
         });
         const listFilesResponse = yield client.paginate(listFilesOptions);
-        const changedFiles = listFilesResponse.map((f) => ({
-            filename: f.filename,
-            patch: f.patch,
-        }));
+        const changedFiles = listFilesResponse.map((f) => {
+            var _a;
+            return ({
+                filename: f.filename,
+                // `patch` is `undefined` at times: https://github.com/freckle/commenter-action/issues/120
+                patch: (_a = f.patch) !== null && _a !== void 0 ? _a : '',
+            });
+        });
         core.debug("found changed files:");
         for (const file of changedFiles) {
             core.debug(" file: " + file.filename);

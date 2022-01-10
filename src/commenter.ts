@@ -53,7 +53,8 @@ async function getChangedFiles(client: ClientType): Promise<ChangedFile[]> {
   const listFilesResponse = await client.paginate(listFilesOptions);
   const changedFiles = listFilesResponse.map((f: any) => ({
     filename: f.filename,
-    patch: f.patch,
+    // `patch` is `undefined` at times: https://github.com/freckle/commenter-action/issues/120
+    patch: f.patch ?? '',
   }));
 
   core.debug("found changed files:");
