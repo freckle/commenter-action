@@ -2,8 +2,11 @@ import * as core from "@actions/core";
 import * as github from "@actions/github";
 import * as yaml from "js-yaml";
 import { Minimatch } from "minimatch";
+import { RestEndpointMethodTypes } from "@octokit/plugin-rest-endpoint-methods";
 
 type ClientType = ReturnType<typeof github.getOctokit>;
+type ListFilesResponse =
+  RestEndpointMethodTypes["pulls"]["listFiles"]["response"]["data"];
 
 export async function run() {
   try {
@@ -50,10 +53,12 @@ async function getChangedFiles(client: ClientType): Promise<ChangedFile[]> {
     pull_number: github.context.issue.number,
   });
 
-  const listFilesResponse = await client.paginate(listFilesOptions);
-  const changedFiles = listFilesResponse.map((f: any) => ({
+  const listFilesResponse: ListFilesResponse = await client.paginate(
+    listFilesOptions
+  );
+  const changedFiles = listFilesResponse.map((f) => ({
     filename: f.filename,
-    patch: f.patch,
+    patch: f.patch ?? "",
   }));
 
   core.debug("found changed files:");
