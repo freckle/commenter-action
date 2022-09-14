@@ -22,7 +22,7 @@
     "minimatch": "^5.1.0"
   },
   "devDependencies": {
-    "@octokit/plugin-rest-endpoint-methods": "^6.5.2",
+    "@octokit/plugin-rest-endpoint-methods": "^6.6.0",
     "@types/jest": "^27.5.0",
     "@types/js-yaml": "^4.0.5",
     "@types/minimatch": "^5.1.2",
