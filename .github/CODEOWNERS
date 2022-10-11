@@ -1,1 +1,5 @@
 * @freckle/team-platform
+
+# Disable review requests on Dependabot PRs
+/package.json
+/package-lock.json
