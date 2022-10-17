@@ -45,7 +45,7 @@ jobs:
   comment:
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/commenter@main
+    - uses: actions/commenter@v1
       with:
         repo-token: "${{ secrets.GITHUB_TOKEN }}"
 ```
