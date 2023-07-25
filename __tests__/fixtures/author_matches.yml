@@ -2,8 +2,7 @@ author-match:
   where:
     path:
       matches: "*.sql"
-    author:
-      matches:
-        - bot
+    authors:
+      - bot
   body: |
     This change requires human review

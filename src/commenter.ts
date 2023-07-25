@@ -93,9 +93,7 @@ type ConfigurationWhereClause = {
   additions_or_deletions?: {
     contain: string[];
   };
-  author?: {
-    matches: string[];
-  };
+  authors?: string[];
 };
 
 type Configuration = {
@@ -141,8 +139,8 @@ function matches(changes: Changes, where: ConfigurationWhereClause): boolean {
   );
 
   const hasAuthorMatch =
-    !where.author ||
-    (author !== undefined && where.author.matches.includes(author));
+    !where.authors ||
+    (author !== undefined && where.authors.includes(author));
 
   return hasFileMatch && hasAuthorMatch;
 }
