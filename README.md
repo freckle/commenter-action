@@ -75,6 +75,26 @@ UnsafeMentionedInCode:
     good going! If you added it, please consider finding a safer alternative!
 ```
 
+Use `where.author.any` to only comment on PRs that authored by specific users,
+and `where.labels.any` to only comment when specific labels are present. Keep
+in mind that all `where` conditions must be satisfied for a comment to be made:
+
+```yaml
+CommentOnAutomatedUpdate:
+  where:
+    path:
+      matches: "*/**/yarn.lock"
+    author:
+      any:
+        - dependabot[bot]
+    labels:
+      any:
+        - Frontend
+  body: |
+    This is an automated update to the frontend lockfile. Please verify the
+    integrity of the packages being updated.
+```
+
 ## Acknowledgements
 
 This action was highly inspired by (and began as a copy of)
