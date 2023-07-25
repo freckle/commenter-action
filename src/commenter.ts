@@ -96,7 +96,9 @@ type ConfigurationWhereClause = {
   additions_or_deletions?: {
     contain: string[];
   };
-  authors?: string[];
+  author?: {
+    any: string[];
+  };
   labels?: string[];
 };
 
@@ -147,7 +149,8 @@ function matches(changes: Changes, where: ConfigurationWhereClause): boolean {
   );
 
   const hasAuthorMatch =
-    !where.authors || (author !== undefined && where.authors.includes(author));
+    !where.author ||
+    (author !== undefined && where.author.any.includes(author));
 
   const hasLabelMatch =
     !where.labels || labels.some((label) => where.labels?.includes(label));

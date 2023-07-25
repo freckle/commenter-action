@@ -17,7 +17,7 @@ const yamlFixtures = {
   "patch_contains.yml": fs.readFileSync(
     "__tests__/fixtures/patch_contains.yml",
   ),
-  "authors.yml": fs.readFileSync("__tests__/fixtures/authors.yml"),
+  "author.yml": fs.readFileSync("__tests__/fixtures/author.yml"),
   "labels.yml": fs.readFileSync("__tests__/fixtures/labels.yml"),
   "all_conditions.yml": fs.readFileSync(
     "__tests__/fixtures/all_conditions.yml",
@@ -99,7 +99,7 @@ describe("run", () => {
   });
 
   it("adds comments to PRs that match glob patterns and author", async () => {
-    usingConfigYaml("authors.yml");
+    usingConfigYaml("author.yml");
     mockGitHubResponseChangedFiles("foo.sql");
     mockGitHubResponsePrGet({ author: "bot" });
 
@@ -115,7 +115,7 @@ describe("run", () => {
   });
 
   it("does not comment on PRs that match glob patterns from different author", async () => {
-    usingConfigYaml("authors.yml");
+    usingConfigYaml("author.yml");
     mockGitHubResponseChangedFiles("foo.sql");
     mockGitHubResponsePrGet({ author: "different-author" });
 
@@ -125,7 +125,7 @@ describe("run", () => {
   });
 
   it("does not comment on PRs that match the author but not glob patterns", async () => {
-    usingConfigYaml("authors.yml");
+    usingConfigYaml("author.yml");
     mockGitHubResponseChangedFiles("foo.txt");
     mockGitHubResponsePrGet({ author: "bot" });
 

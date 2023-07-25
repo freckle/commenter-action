@@ -2,8 +2,9 @@ all-conditions-match:
   where:
     path:
       matches: "*.sql"
-    authors:
-      - bot
+    author:
+      any:
+        - bot
     labels:
       - Database
   body: |
