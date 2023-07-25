@@ -10,14 +10,16 @@ const gh = github.getOctokit("_");
 const createCommentMock = jest.spyOn(gh.rest.issues, "createComment");
 const reposMock = jest.spyOn(gh.rest.repos, "getContent");
 const paginateMock = jest.spyOn(gh, "paginate");
-const getPullMock = jest.spyOn(gh.rest.pulls, 'get');
+const getPullMock = jest.spyOn(gh.rest.pulls, "get");
 
 const yamlFixtures = {
   "only_pdfs.yml": fs.readFileSync("__tests__/fixtures/only_pdfs.yml"),
   "patch_contains.yml": fs.readFileSync(
-    "__tests__/fixtures/patch_contains.yml"
+    "__tests__/fixtures/patch_contains.yml",
   ),
-  "author_matches.yml": fs.readFileSync("__tests__/fixtures/author_matches.yml")
+  "author_matches.yml": fs.readFileSync(
+    "__tests__/fixtures/author_matches.yml",
+  ),
 };
 
 afterAll(() => jest.restoreAllMocks());
@@ -93,14 +95,14 @@ describe("run", () => {
 
     expect(createCommentMock).toHaveBeenCalledTimes(0);
   });
-  
+
   it("adds comments to PRs that match glob patterns and author", async () => {
     usingConfigYaml("author_matches.yml");
     mockGitHubResponseChangedFiles("foo.sql");
     mockGitHubResponsePrGet("bot");
-  
+
     await run();
-  
+
     expect(createCommentMock).toHaveBeenCalledTimes(1);
     expect(createCommentMock).toHaveBeenCalledWith({
       owner: "monalisa",
@@ -109,24 +111,24 @@ describe("run", () => {
       body: "This change requires human review\n",
     });
   });
-  
+
   it("does not comment on PRs that match glob patterns from different author", async () => {
     usingConfigYaml("author_matches.yml");
     mockGitHubResponseChangedFiles("foo.sql");
     mockGitHubResponsePrGet("different-author");
-  
+
     await run();
-  
+
     expect(createCommentMock).toHaveBeenCalledTimes(0);
   });
-  
+
   it("does not comment on PRs that match the author but not glob patterns", async () => {
     usingConfigYaml("author_matches.yml");
     mockGitHubResponseChangedFiles("foo.txt");
     mockGitHubResponsePrGet("bot");
-  
+
     await run();
-  
+
     expect(createCommentMock).toHaveBeenCalledTimes(0);
   });
 });
@@ -152,6 +154,6 @@ function mockGitHubResponseChangedFiles(...files: FileNameOrWithPatch[]): void {
 
 function mockGitHubResponsePrGet(author: string): void {
   getPullMock.mockResolvedValue(<any>{
-    data: { user: { login: author} },
+    data: { user: { login: author } },
   });
 }

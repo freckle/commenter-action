@@ -47,21 +47,19 @@ export async function run() {
 type ChangedFile = { filename: string; patch: string };
 
 async function getChanges(client: ClientType): Promise<Changes> {
-  const {data: pullRequest} = await client.rest.pulls.get({
+  const { data: pullRequest } = await client.rest.pulls.get({
     owner: github.context.repo.owner,
     repo: github.context.repo.repo,
     pull_number: github.context.issue.number,
-  })
-  
+  });
+
   const listFilesOptions = client.rest.pulls.listFiles.endpoint.merge({
     owner: github.context.repo.owner,
     repo: github.context.repo.repo,
     pull_number: github.context.issue.number,
   });
 
-  const listFilesResponse = await client.paginate(
-    listFilesOptions
-  );
+  const listFilesResponse = await client.paginate(listFilesOptions);
   const changedFiles = listFilesResponse.map((f: any) => ({
     filename: f.filename,
     patch: f.patch ?? "",
@@ -75,7 +73,7 @@ async function getChanges(client: ClientType): Promise<Changes> {
 
   return {
     changedFiles,
-    author: pullRequest.user?.login
+    author: pullRequest.user?.login,
   };
 }
 
@@ -97,7 +95,7 @@ type ConfigurationWhereClause = {
   };
   author?: {
     matches: string[];
-  }
+  };
 };
 
 type Configuration = {
@@ -107,11 +105,11 @@ type Configuration = {
 
 async function getConfigurations(
   client: ClientType,
-  configurationPath: string
+  configurationPath: string,
 ): Promise<Map<string, Configuration>> {
   const configurationContent: string = await fetchContent(
     client,
-    configurationPath
+    configurationPath,
   );
 
   const configObject: any = yaml.load(configurationContent);
@@ -131,23 +129,22 @@ async function fetchContent(client: ClientType, path: string): Promise<string> {
 
 type Changes = { changedFiles: ChangedFile[]; author?: string };
 
-function matches(
-  changes: Changes,
-  where: ConfigurationWhereClause
-): boolean {
-  const {changedFiles, author} = changes
+function matches(changes: Changes, where: ConfigurationWhereClause): boolean {
+  const { changedFiles, author } = changes;
   const matcher = new Minimatch(where.path.matches);
 
   const hasFileMatch = changedFiles.some(
     ({ filename, patch }) =>
       matcher.match(filename) &&
       (!where.additions_or_deletions ||
-        patchContains(patch, where.additions_or_deletions.contain))
+        patchContains(patch, where.additions_or_deletions.contain)),
   );
-  
-  const hasAuthorMatch = !where.author || (author !== undefined && where.author.matches.includes(author))
-  
-  return hasFileMatch && hasAuthorMatch
+
+  const hasAuthorMatch =
+    !where.author ||
+    (author !== undefined && where.author.matches.includes(author));
+
+  return hasFileMatch && hasAuthorMatch;
 }
 
 const patchContains = (patch: string, needles: string[]) =>
