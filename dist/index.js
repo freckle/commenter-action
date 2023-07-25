@@ -110,6 +110,7 @@ function getChanges(client) {
         return {
             changedFiles,
             author: (_a = pullRequest.user) === null || _a === void 0 ? void 0 : _a.login,
+            labels: pullRequest.labels.map((label) => label.name),
         };
     });
 }
@@ -142,13 +143,14 @@ function fetchContent(client, path) {
     });
 }
 function matches(changes, where) {
-    const { changedFiles, author } = changes;
+    const { changedFiles, author, labels } = changes;
     const matcher = new minimatch_1.Minimatch(where.path.matches);
     const hasFileMatch = changedFiles.some(({ filename, patch }) => matcher.match(filename) &&
         (!where.additions_or_deletions ||
             patchContains(patch, where.additions_or_deletions.contain)));
     const hasAuthorMatch = !where.authors || (author !== undefined && where.authors.includes(author));
-    return hasFileMatch && hasAuthorMatch;
+    const hasLabelMatch = !where.labels || labels.some((label) => { var _a; return (_a = where.labels) === null || _a === void 0 ? void 0 : _a.includes(label); });
+    return hasFileMatch && hasAuthorMatch && hasLabelMatch;
 }
 const patchContains = (patch, needles) => needles.some((needle) => patch.includes(needle));
 
