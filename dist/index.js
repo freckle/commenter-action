@@ -147,8 +147,7 @@ function matches(changes, where) {
     const hasFileMatch = changedFiles.some(({ filename, patch }) => matcher.match(filename) &&
         (!where.additions_or_deletions ||
             patchContains(patch, where.additions_or_deletions.contain)));
-    const hasAuthorMatch = !where.author ||
-        (author !== undefined && where.author.matches.includes(author));
+    const hasAuthorMatch = !where.authors || (author !== undefined && where.authors.includes(author));
     return hasFileMatch && hasAuthorMatch;
 }
 const patchContains = (patch, needles) => needles.some((needle) => patch.includes(needle));
