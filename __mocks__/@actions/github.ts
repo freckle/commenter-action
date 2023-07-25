@@ -22,8 +22,8 @@ const mockApi = {
     pulls: {
       get: jest.fn().mockResolvedValue({
         data: {
-          user: {}
-        }
+          user: {},
+        },
       }),
       listFiles: {
         endpoint: {

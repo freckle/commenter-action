@@ -59,8 +59,10 @@ async function getChanges(client: ClientType): Promise<Changes> {
     pull_number: github.context.issue.number,
   });
 
-  const listFilesResponse: ListFilesResponse = await client.paginate(listFilesOptions);
-  const changedFiles = listFilesResponse.map(f => ({
+  const listFilesResponse: ListFilesResponse = await client.paginate(
+    listFilesOptions,
+  );
+  const changedFiles = listFilesResponse.map((f) => ({
     filename: f.filename,
     patch: f.patch ?? "",
   }));
@@ -139,8 +141,7 @@ function matches(changes: Changes, where: ConfigurationWhereClause): boolean {
   );
 
   const hasAuthorMatch =
-    !where.authors ||
-    (author !== undefined && where.authors.includes(author));
+    !where.authors || (author !== undefined && where.authors.includes(author));
 
   return hasFileMatch && hasAuthorMatch;
 }
