@@ -148,8 +148,9 @@ function matches(changes, where) {
     const hasFileMatch = changedFiles.some(({ filename, patch }) => matcher.match(filename) &&
         (!where.additions_or_deletions ||
             patchContains(patch, where.additions_or_deletions.contain)));
-    const hasAuthorMatch = !where.authors || (author !== undefined && where.authors.includes(author));
-    const hasLabelMatch = !where.labels || labels.some((label) => { var _a; return (_a = where.labels) === null || _a === void 0 ? void 0 : _a.includes(label); });
+    const hasAuthorMatch = !where.author ||
+        (author !== undefined && where.author.any.includes(author));
+    const hasLabelMatch = !where.labels || labels.some((label) => { var _a; return (_a = where.labels) === null || _a === void 0 ? void 0 : _a.any.includes(label); });
     return hasFileMatch && hasAuthorMatch && hasLabelMatch;
 }
 const patchContains = (patch, needles) => needles.some((needle) => patch.includes(needle));
