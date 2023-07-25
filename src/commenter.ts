@@ -76,6 +76,7 @@ async function getChanges(client: ClientType): Promise<Changes> {
   return {
     changedFiles,
     author: pullRequest.user?.login,
+    labels: pullRequest.labels.map((label) => label.name),
   };
 }
 
@@ -96,6 +97,7 @@ type ConfigurationWhereClause = {
     contain: string[];
   };
   authors?: string[];
+  labels?: string[];
 };
 
 type Configuration = {
@@ -127,10 +129,14 @@ async function fetchContent(client: ClientType, path: string): Promise<string> {
   return Buffer.from(response.data.content, response.data.encoding).toString();
 }
 
-type Changes = { changedFiles: ChangedFile[]; author?: string };
+type Changes = {
+  changedFiles: ChangedFile[];
+  author?: string;
+  labels: string[];
+};
 
 function matches(changes: Changes, where: ConfigurationWhereClause): boolean {
-  const { changedFiles, author } = changes;
+  const { changedFiles, author, labels } = changes;
   const matcher = new Minimatch(where.path.matches);
 
   const hasFileMatch = changedFiles.some(
@@ -143,7 +149,10 @@ function matches(changes: Changes, where: ConfigurationWhereClause): boolean {
   const hasAuthorMatch =
     !where.authors || (author !== undefined && where.authors.includes(author));
 
-  return hasFileMatch && hasAuthorMatch;
+  const hasLabelMatch =
+    !where.labels || labels.some((label) => where.labels?.includes(label));
+
+  return hasFileMatch && hasAuthorMatch && hasLabelMatch;
 }
 
 const patchContains = (patch: string, needles: string[]) =>

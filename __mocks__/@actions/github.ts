@@ -23,6 +23,7 @@ const mockApi = {
       get: jest.fn().mockResolvedValue({
         data: {
           user: {},
+          labels: [],
         },
       }),
       listFiles: {
