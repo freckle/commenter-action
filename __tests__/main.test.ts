@@ -19,6 +19,9 @@ const yamlFixtures = {
   ),
   "authors.yml": fs.readFileSync("__tests__/fixtures/authors.yml"),
   "labels.yml": fs.readFileSync("__tests__/fixtures/labels.yml"),
+  "all_conditions.yml": fs.readFileSync(
+    "__tests__/fixtures/all_conditions.yml",
+  ),
 };
 
 afterAll(() => jest.restoreAllMocks());
@@ -165,6 +168,22 @@ describe("run", () => {
     await run();
 
     expect(createCommentMock).toHaveBeenCalledTimes(0);
+  });
+
+  it("adds comments to PRs that match all conditions", async () => {
+    usingConfigYaml("all_conditions.yml");
+    mockGitHubResponseChangedFiles("foo.sql");
+    mockGitHubResponsePrGet({ author: "bot", labels: ["Database"] });
+
+    await run();
+
+    expect(createCommentMock).toHaveBeenCalledTimes(1);
+    expect(createCommentMock).toHaveBeenCalledWith({
+      owner: "monalisa",
+      repo: "helloworld",
+      issue_number: 123,
+      body: "This change requires human review\n",
+    });
   });
 });
 

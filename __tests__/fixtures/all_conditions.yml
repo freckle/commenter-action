@@ -1,0 +1,10 @@
+all-conditions-match:
+  where:
+    path:
+      matches: "*.sql"
+    authors:
+      - bot
+    labels:
+      - Database
+  body: |
+    This change requires human review
