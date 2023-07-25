@@ -15,12 +15,12 @@ export async function run() {
 
     const client: ClientType = github.getOctokit(token);
     const configs = await getConfigurations(client, configPath);
-    const changedFiles: ChangedFile[] = await getChangedFiles(client);
+    const changes = await getChanges(client);
 
     let body: string | null = null;
 
     for (const [_name, config] of Object.entries(configs)) {
-      if (matches(changedFiles, config.where)) {
+      if (matches(changes, config.where)) {
         body = config.body;
         break; // first match wins
       }
@@ -46,17 +46,23 @@ export async function run() {
 
 type ChangedFile = { filename: string; patch: string };
 
-async function getChangedFiles(client: ClientType): Promise<ChangedFile[]> {
+async function getChanges(client: ClientType): Promise<Changes> {
+  const {data: pullRequest} = await client.rest.pulls.get({
+    owner: github.context.repo.owner,
+    repo: github.context.repo.repo,
+    pull_number: github.context.issue.number,
+  })
+  
   const listFilesOptions = client.rest.pulls.listFiles.endpoint.merge({
     owner: github.context.repo.owner,
     repo: github.context.repo.repo,
     pull_number: github.context.issue.number,
   });
 
-  const listFilesResponse: ListFilesResponse = await client.paginate(
+  const listFilesResponse = await client.paginate(
     listFilesOptions
   );
-  const changedFiles = listFilesResponse.map((f) => ({
+  const changedFiles = listFilesResponse.map((f: any) => ({
     filename: f.filename,
     patch: f.patch ?? "",
   }));
@@ -67,7 +73,10 @@ async function getChangedFiles(client: ClientType): Promise<ChangedFile[]> {
     core.debug(" patch (first 100): " + file.patch.slice(0, 100));
   }
 
-  return changedFiles;
+  return {
+    changedFiles,
+    author: pullRequest.user?.login
+  };
 }
 
 async function addComment(client: ClientType, body: string): Promise<void> {
@@ -86,6 +95,9 @@ type ConfigurationWhereClause = {
   additions_or_deletions?: {
     contain: string[];
   };
+  author?: {
+    matches: string[];
+  }
 };
 
 type Configuration = {
@@ -117,18 +129,25 @@ async function fetchContent(client: ClientType, path: string): Promise<string> {
   return Buffer.from(response.data.content, response.data.encoding).toString();
 }
 
+type Changes = { changedFiles: ChangedFile[]; author?: string };
+
 function matches(
-  changedFiles: ChangedFile[],
+  changes: Changes,
   where: ConfigurationWhereClause
 ): boolean {
+  const {changedFiles, author} = changes
   const matcher = new Minimatch(where.path.matches);
 
-  return changedFiles.some(
+  const hasFileMatch = changedFiles.some(
     ({ filename, patch }) =>
       matcher.match(filename) &&
       (!where.additions_or_deletions ||
         patchContains(patch, where.additions_or_deletions.contain))
   );
+  
+  const hasAuthorMatch = !where.author || (author !== undefined && where.author.matches.includes(author))
+  
+  return hasFileMatch && hasAuthorMatch
 }
 
 const patchContains = (patch: string, needles: string[]) =>
