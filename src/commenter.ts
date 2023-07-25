@@ -15,12 +15,12 @@ export async function run() {
 
     const client: ClientType = github.getOctokit(token);
     const configs = await getConfigurations(client, configPath);
-    const changedFiles: ChangedFile[] = await getChangedFiles(client);
+    const changes = await getChanges(client);
 
     let body: string | null = null;
 
     for (const [_name, config] of Object.entries(configs)) {
-      if (matches(changedFiles, config.where)) {
+      if (matches(changes, config.where)) {
         body = config.body;
         break; // first match wins
       }
@@ -46,7 +46,13 @@ export async function run() {
 
 type ChangedFile = { filename: string; patch: string };
 
-async function getChangedFiles(client: ClientType): Promise<ChangedFile[]> {
+async function getChanges(client: ClientType): Promise<Changes> {
+  const { data: pullRequest } = await client.rest.pulls.get({
+    owner: github.context.repo.owner,
+    repo: github.context.repo.repo,
+    pull_number: github.context.issue.number,
+  });
+
   const listFilesOptions = client.rest.pulls.listFiles.endpoint.merge({
     owner: github.context.repo.owner,
     repo: github.context.repo.repo,
@@ -54,7 +60,7 @@ async function getChangedFiles(client: ClientType): Promise<ChangedFile[]> {
   });
 
   const listFilesResponse: ListFilesResponse = await client.paginate(
-    listFilesOptions
+    listFilesOptions,
   );
   const changedFiles = listFilesResponse.map((f) => ({
     filename: f.filename,
@@ -67,7 +73,11 @@ async function getChangedFiles(client: ClientType): Promise<ChangedFile[]> {
     core.debug(" patch (first 100): " + file.patch.slice(0, 100));
   }
 
-  return changedFiles;
+  return {
+    changedFiles,
+    author: pullRequest.user?.login,
+    labels: pullRequest.labels.map((label) => label.name),
+  };
 }
 
 async function addComment(client: ClientType, body: string): Promise<void> {
@@ -86,6 +96,12 @@ type ConfigurationWhereClause = {
   additions_or_deletions?: {
     contain: string[];
   };
+  author?: {
+    any: string[];
+  };
+  labels?: {
+    any: string[];
+  };
 };
 
 type Configuration = {
@@ -95,11 +111,11 @@ type Configuration = {
 
 async function getConfigurations(
   client: ClientType,
-  configurationPath: string
+  configurationPath: string,
 ): Promise<Map<string, Configuration>> {
   const configurationContent: string = await fetchContent(
     client,
-    configurationPath
+    configurationPath,
   );
 
   const configObject: any = yaml.load(configurationContent);
@@ -117,18 +133,31 @@ async function fetchContent(client: ClientType, path: string): Promise<string> {
   return Buffer.from(response.data.content, response.data.encoding).toString();
 }
 
-function matches(
-  changedFiles: ChangedFile[],
-  where: ConfigurationWhereClause
-): boolean {
+type Changes = {
+  changedFiles: ChangedFile[];
+  author?: string;
+  labels: string[];
+};
+
+function matches(changes: Changes, where: ConfigurationWhereClause): boolean {
+  const { changedFiles, author, labels } = changes;
   const matcher = new Minimatch(where.path.matches);
 
-  return changedFiles.some(
+  const hasFileMatch = changedFiles.some(
     ({ filename, patch }) =>
       matcher.match(filename) &&
       (!where.additions_or_deletions ||
-        patchContains(patch, where.additions_or_deletions.contain))
+        patchContains(patch, where.additions_or_deletions.contain)),
   );
+
+  const hasAuthorMatch =
+    !where.author ||
+    (author !== undefined && where.author.any.includes(author));
+
+  const hasLabelMatch =
+    !where.labels || labels.some((label) => where.labels?.any.includes(label));
+
+  return hasFileMatch && hasAuthorMatch && hasLabelMatch;
 }
 
 const patchContains = (patch: string, needles: string[]) =>

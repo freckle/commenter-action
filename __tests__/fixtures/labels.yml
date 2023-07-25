@@ -1,0 +1,10 @@
+labels-match:
+  where:
+    path:
+      matches: "*.js"
+    labels:
+      any:
+        - Frontend
+        - JavaScript
+  body: |
+    Remember to update your mocks!
