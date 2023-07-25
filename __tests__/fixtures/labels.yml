@@ -3,7 +3,8 @@ labels-match:
     path:
       matches: "*.js"
     labels:
-      - Frontend
-      - JavaScript
+      any:
+        - Frontend
+        - JavaScript
   body: |
     Remember to update your mocks!

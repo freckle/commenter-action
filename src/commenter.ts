@@ -99,7 +99,9 @@ type ConfigurationWhereClause = {
   author?: {
     any: string[];
   };
-  labels?: string[];
+  labels?: {
+    any: string[];
+  };
 };
 
 type Configuration = {
@@ -153,7 +155,7 @@ function matches(changes: Changes, where: ConfigurationWhereClause): boolean {
     (author !== undefined && where.author.any.includes(author));
 
   const hasLabelMatch =
-    !where.labels || labels.some((label) => where.labels?.includes(label));
+    !where.labels || labels.some((label) => where.labels?.any.includes(label));
 
   return hasFileMatch && hasAuthorMatch && hasLabelMatch;
 }

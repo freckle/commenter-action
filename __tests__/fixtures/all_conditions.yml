@@ -6,6 +6,7 @@ all-conditions-match:
       any:
         - bot
     labels:
-      - Database
+      any:
+        - Database
   body: |
     This change requires human review
