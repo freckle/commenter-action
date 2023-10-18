@@ -24,7 +24,7 @@
   "devDependencies": {
     "@octokit/plugin-rest-endpoint-methods": "^10.0.1",
     "@types/jest": "^27.5.0",
-    "@types/js-yaml": "^4.0.7",
+    "@types/js-yaml": "^4.0.8",
     "@types/minimatch": "^5.1.2",
     "@types/node": "^20.8.6",
     "@vercel/ncc": "^0.38.0",
