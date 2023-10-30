@@ -54,6 +54,24 @@ jobs:
 
 See [`action.yml`](./action.yml).
 
+## Permissions
+
+Running this action requires the following permissions:
+
+```yaml
+permissions:
+  id-token: write
+  contents: read
+  pull-requests: write
+```
+
+These are required to be explicitly set for repositories with [restricted
+default access][perms] for workflows or to allow a workflow run triggered by
+Dependabot pull requests, which are run as if they are from a forked
+repository and use a read-only `GITHUB_TOKEN`.
+
+[perms]: https://docs.github.com/en/actions/security-guides/automatic-token-authentication#permissions-for-the-github_token
+
 ## Additional Options
 
 You can also match based on specific file changes by supplying the
