@@ -201,6 +201,8 @@ describe("run", () => {
       body: "The comment body\n",
     });
 
+    mockIssueComments([{ body: "The comment body\n" }]);
+
     await run();
     expect(createCommentMock).toHaveBeenCalledTimes(1);
   });
@@ -237,4 +239,12 @@ function mockGitHubResponsePrGet(details?: MockedPrDetails): void {
   getPullMock.mockResolvedValue(<any>{
     data: { user: { login: details?.author }, labels },
   });
+}
+
+type MockedIssueComment = {
+  body?: string;
+};
+
+function mockIssueComments(comments: MockedIssueComment[]): void {
+  paginateMock.mockReturnValue(<any>comments);
 }

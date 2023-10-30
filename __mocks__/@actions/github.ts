@@ -18,6 +18,16 @@ const mockApi = {
   rest: {
     issues: {
       createComment: jest.fn(),
+      listComments: {
+        endpoint: {
+          merge: jest.fn().mockResolvedValue([
+            {
+              user: {},
+              body: null,
+            },
+          ]),
+        },
+      },
     },
     pulls: {
       get: jest.fn().mockResolvedValue({
