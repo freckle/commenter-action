@@ -185,6 +185,25 @@ describe("run", () => {
       body: "This change requires human review\n",
     });
   });
+
+  it("adds only a single comment when run on a PR multiple times with matching conditions", async () => {
+    usingConfigYaml("only_pdfs.yml");
+    mockGitHubResponseChangedFiles("foo.pdf");
+    mockGitHubResponsePrGet();
+
+    await run();
+
+    expect(createCommentMock).toHaveBeenCalledTimes(1);
+    expect(createCommentMock).toHaveBeenCalledWith({
+      owner: "monalisa",
+      repo: "helloworld",
+      issue_number: 123,
+      body: "The comment body\n",
+    });
+
+    await run();
+    expect(createCommentMock).toHaveBeenCalledTimes(1);
+  });
 });
 
 function usingConfigYaml(fixtureName: keyof typeof yamlFixtures): void {
