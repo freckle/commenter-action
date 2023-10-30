@@ -1,0 +1,21 @@
+Backend:
+  where:
+    path:
+      matches: "backend/**/*"
+  body: |
+    :wave: You've changed Backend code, please:
+
+    - [ ] Do this
+    - [ ] And this
+    - [ ] And that
+
+Frontend:
+  where:
+    path:
+      matches: "frontend/**/*"
+  body: |
+    :wave: You've changed Frontend code, please:
+
+    - [ ] Do this
+    - [ ] And this
+    - [ ] And that
