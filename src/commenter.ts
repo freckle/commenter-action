@@ -7,6 +7,8 @@ import { RestEndpointMethodTypes } from "@octokit/plugin-rest-endpoint-methods";
 type ClientType = ReturnType<typeof github.getOctokit>;
 type ListFilesResponse =
   RestEndpointMethodTypes["pulls"]["listFiles"]["response"]["data"];
+type ListCommentsResponse =
+  RestEndpointMethodTypes["issues"]["listComments"]["response"]["data"];
 
 export async function run() {
   try {
@@ -27,7 +29,13 @@ export async function run() {
     }
 
     if (body) {
-      addComment(client, body);
+      const comments = await fetchComments(client);
+      const hasExistingComment = comments.some(
+        (comment) => comment.body === body,
+      );
+      if (!hasExistingComment) {
+        addComment(client, body);
+      }
     }
   } catch (error) {
     // Refine unknown type
@@ -87,6 +95,17 @@ async function addComment(client: ClientType, body: string): Promise<void> {
     issue_number: github.context.issue.number,
     body,
   });
+}
+
+async function fetchComments(
+  client: ClientType,
+): Promise<ListCommentsResponse> {
+  const listCommentsOptions = client.rest.issues.listComments.endpoint.merge({
+    owner: github.context.repo.owner,
+    repo: github.context.repo.repo,
+    issue_number: github.context.issue.number,
+  });
+  return await client.paginate(listCommentsOptions);
 }
 
 type ConfigurationWhereClause = {
