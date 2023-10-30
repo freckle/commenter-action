@@ -60,7 +60,6 @@ Running this action requires the following permissions:
 
 ```yaml
 permissions:
-  id-token: write
   contents: read
   pull-requests: write
 ```
