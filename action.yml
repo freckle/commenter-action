@@ -1,15 +1,15 @@
-name: 'Commenter'
-description: 'Automatically comment on pull requests based on the paths of files being changed'
-author: 'Freckle'
+name: "Commenter"
+description: "Automatically comment on pull requests based on the paths of files being changed"
+author: "Freckle"
 inputs:
   repo-token:
-    description: 'The GITHUB_TOKEN secret'
-    default: '${{ github.token }}'
+    description: "The GITHUB_TOKEN secret"
+    default: "${{ github.token }}"
   configuration-path:
-    description: 'The path for the comment configurations'
-    default: '.github/commenter.yml'
+    description: "The path for the comment configurations"
+    default: ".github/commenter.yml"
     required: false
 
 runs:
-  using: 'node20'
-  main: 'dist/index.js'
+  using: "node20"
+  main: "dist/index.js"
