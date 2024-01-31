@@ -3,22 +3,21 @@ name: CI
 on:
   pull_request:
   push:
-    branches:
-      - main
+    branches: main
 
 jobs:
   build:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v2
-      - name: Setup node 14
-        uses: actions/setup-node@v2
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
         with:
-          node-version: 14.x
+          cache: npm
+          node-version-file: .nvmrc
       - run: npm install
       - run: npm run build
       - run: npm test
-  
+
   integration:
     runs-on: ubuntu-latest
     permissions:
@@ -27,5 +26,3 @@ jobs:
     steps:
     - uses: actions/checkout@v4
     - uses: ./
-      with:
-        repo-token: "${{ secrets.GITHUB_TOKEN }}"

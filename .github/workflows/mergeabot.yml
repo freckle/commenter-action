@@ -1,13 +1,13 @@
 name: Mergeabot
 
 on:
+  pull_request:
   schedule:
     - cron: "0 0 * * *"
 
-  # test changes to this file itself
-  pull_request:
-    paths:
-      - .github/workflows/mergeabot.yml
+permissions:
+  contents: write
+  pull-requests: write
 
 jobs:
   mergeabot:
@@ -15,4 +15,4 @@ jobs:
     steps:
       - uses: freckle/mergeabot-action@v1
         with:
-          quarantine-days: 1
+          quarantine-days: -1
