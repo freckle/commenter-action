@@ -22,6 +22,7 @@ const yamlFixtures = {
   "all_conditions.yml": fs.readFileSync(
     "__tests__/fixtures/all_conditions.yml",
   ),
+  "body_file.yml": fs.readFileSync("__tests__/fixtures/body_file.yml"),
 };
 
 afterAll(() => jest.restoreAllMocks());
@@ -185,11 +186,31 @@ describe("run", () => {
       body: "This change requires human review\n",
     });
   });
+
+  it("adds comments from file contents", async () => {
+    usingConfigYaml("body_file.yml");
+    mockGitHubResponseGetContentOnce("Some content\n");
+    mockGitHubResponseChangedFiles("Prelude.hs");
+
+    await run();
+
+    expect(createCommentMock).toHaveBeenCalledTimes(1);
+    expect(createCommentMock).toHaveBeenCalledWith({
+      owner: "monalisa",
+      repo: "helloworld",
+      issue_number: 123,
+      body: "Some content\n",
+    });
+  });
 });
 
 function usingConfigYaml(fixtureName: keyof typeof yamlFixtures): void {
-  reposMock.mockResolvedValue(<any>{
-    data: { content: yamlFixtures[fixtureName], encoding: "utf8" },
+  mockGitHubResponseGetContentOnce(yamlFixtures[fixtureName]);
+}
+
+function mockGitHubResponseGetContentOnce(content: string): void {
+  reposMock.mockResolvedValueOnce(<any>{
+    data: { content, encoding: "utf8" },
   });
 }
 

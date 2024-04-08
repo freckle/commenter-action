@@ -1,0 +1,4 @@
+Prelude:
+  where:
+    path:
+      matches: "Prelude.hs"

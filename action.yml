@@ -9,6 +9,10 @@ inputs:
     description: "The path for the comment configurations"
     default: ".github/commenter.yml"
     required: false
+  body-file-prefix:
+    description: "The path for finding body markdown files"
+    default: ".github/commenter/"
+    required: false
 
 runs:
   using: "node20"
