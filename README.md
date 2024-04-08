@@ -110,6 +110,14 @@ CommentOnAutomatedUpdate:
     integrity of the packages being updated.
 ```
 
+## Reading the Comment Body from a File
+
+If `body` is omitted, a file named `.github/commenter/{name}.md` is read from
+the default branch for the comment contents. The `.github/commenter/` prefix can
+be changed via `inputs.body-file-prefix`. The complete path, or just the name
+part, can be specified via the `body-file` and `body-file-name` attributes of
+the configuration, respectively.
+
 ## Acknowledgements
 
 This action was highly inspired by (and began as a copy of)

@@ -19,3 +19,8 @@ Frontend:
     - [ ] Do this
     - [ ] And this
     - [ ] And that
+
+Prelude:
+  where:
+    path:
+      matches: "backend/**/*"

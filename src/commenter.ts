@@ -12,6 +12,9 @@ export async function run() {
   try {
     const token = core.getInput("repo-token", { required: true });
     const configPath = core.getInput("configuration-path", { required: true });
+    const bodyFilePrefix = core.getInput("body-file-prefix", {
+      required: true,
+    });
 
     const client: ClientType = github.getOctokit(token);
     const configs = await getConfigurations(client, configPath);
@@ -19,9 +22,16 @@ export async function run() {
 
     let body: string | null = null;
 
-    for (const [_name, config] of Object.entries(configs)) {
+    for (const [name, config] of Object.entries(configs)) {
       if (matches(changes, config.where)) {
-        body = config.body;
+        if (config.body) {
+          body = config.body;
+        } else {
+          const bodyFileName = config["body-file-name"] ?? `${name}.md`;
+          const bodyFile =
+            config["body-file"] ?? `${bodyFilePrefix}${bodyFileName}`;
+          body = await fetchContent(client, bodyFile);
+        }
         break; // first match wins
       }
     }
@@ -104,7 +114,9 @@ type ConfigurationWhereClause = {
 };
 
 type Configuration = {
-  body: string;
+  body: string | undefined;
+  "body-file": string | undefined;
+  "body-file-name": string | undefined;
   where: ConfigurationWhereClause;
 };
 
