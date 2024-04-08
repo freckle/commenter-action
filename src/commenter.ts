@@ -59,9 +59,8 @@ async function getChanges(client: ClientType): Promise<Changes> {
     pull_number: github.context.issue.number,
   });
 
-  const listFilesResponse: ListFilesResponse = await client.paginate(
-    listFilesOptions,
-  );
+  const listFilesResponse: ListFilesResponse =
+    await client.paginate(listFilesOptions);
   const changedFiles = listFilesResponse.map((f) => ({
     filename: f.filename,
     patch: f.patch ?? "",
