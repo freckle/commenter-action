@@ -1,11 +1,8 @@
 import * as core from "@actions/core";
 import * as github from "@actions/github";
-import * as yaml from "js-yaml";
 
 import { getChanges } from "./changes";
 import { getConfigurations, getCommentBody } from "./configuration";
-import { fetchRepoContent } from "./repo-content";
-import { ConfigurationWhereClause } from "./where";
 import * as where from "./where";
 
 type ClientType = ReturnType<typeof github.getOctokit>;
@@ -26,7 +23,7 @@ export async function run() {
 
     for (const [name, config] of Object.entries(configs)) {
       if (where.matches(changes, config.where)) {
-        body = await getCommentBody(client, bodyFilePrefix, config);
+        body = await getCommentBody(client, bodyFilePrefix, name, config);
         break; // first match wins
       }
     }
