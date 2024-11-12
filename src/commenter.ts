@@ -1,16 +1,14 @@
 import * as core from "@actions/core";
 import * as github from "@actions/github";
 import * as yaml from "js-yaml";
-import { Minimatch } from "minimatch";
-import { RestEndpointMethodTypes } from "@octokit/plugin-rest-endpoint-methods";
 
 import { ConfigurationWhereClause } from "./where";
 import * as where from "./where";
 import { getChanges } from "./changes";
+import { fetchRepoContent } from "./repo-content";
+import { getConfigurations, getCommentBody } from "./configuration";
 
 type ClientType = ReturnType<typeof github.getOctokit>;
-type ListFilesResponse =
-  RestEndpointMethodTypes["pulls"]["listFiles"]["response"]["data"];
 
 export async function run() {
   try {
@@ -28,14 +26,7 @@ export async function run() {
 
     for (const [name, config] of Object.entries(configs)) {
       if (where.matches(changes, config.where)) {
-        if (config.body) {
-          body = config.body;
-        } else {
-          const bodyFileName = config["body-file-name"] ?? `${name}.md`;
-          const bodyFile =
-            config["body-file"] ?? `${bodyFilePrefix}${bodyFileName}`;
-          body = await fetchContent(client, bodyFile);
-        }
+        body = await getCommentBody(client, bodyFilePrefix, config);
         break; // first match wins
       }
     }
@@ -65,35 +56,4 @@ async function addComment(client: ClientType, body: string): Promise<void> {
     issue_number: github.context.issue.number,
     body,
   });
-}
-
-type Configuration = {
-  body: string | undefined;
-  "body-file": string | undefined;
-  "body-file-name": string | undefined;
-  where: ConfigurationWhereClause;
-};
-
-async function getConfigurations(
-  client: ClientType,
-  configurationPath: string,
-): Promise<Map<string, Configuration>> {
-  const configurationContent: string = await fetchContent(
-    client,
-    configurationPath,
-  );
-
-  const configObject: any = yaml.load(configurationContent);
-  return configObject;
-}
-
-async function fetchContent(client: ClientType, path: string): Promise<string> {
-  const response: any = await client.rest.repos.getContent({
-    owner: github.context.repo.owner,
-    repo: github.context.repo.repo,
-    ref: github.context.sha,
-    path,
-  });
-
-  return Buffer.from(response.data.content, response.data.encoding).toString();
 }
