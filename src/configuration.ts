@@ -1,7 +1,7 @@
 import * as github from "@actions/github";
 
-import { ConfigurationWhereClause } from "./where";
 import { fetchRepoContent } from "./repo-content";
+import { ConfigurationWhereClause } from "./where";
 
 type ClientType = ReturnType<typeof github.getOctokit>;
 
