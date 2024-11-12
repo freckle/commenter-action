@@ -31,6 +31,7 @@ export async function getConfigurations(
 export async function getCommentBody(
   client: ClientType,
   bodyFilePrefix: string,
+  name: string,
   config: Configuration,
 ): Promise<string | null> {
   if (config.body) {
