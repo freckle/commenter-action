@@ -4,6 +4,10 @@ import * as yaml from "js-yaml";
 import { Minimatch } from "minimatch";
 import { RestEndpointMethodTypes } from "@octokit/plugin-rest-endpoint-methods";
 
+import { ConfigurationWhereClause } from "./where";
+import * as where from "./where";
+import { getChanges } from "./changes";
+
 type ClientType = ReturnType<typeof github.getOctokit>;
 type ListFilesResponse =
   RestEndpointMethodTypes["pulls"]["listFiles"]["response"]["data"];
@@ -23,7 +27,7 @@ export async function run() {
     let body: string | null = null;
 
     for (const [name, config] of Object.entries(configs)) {
-      if (matches(changes, config.where)) {
+      if (where.matches(changes, config.where)) {
         if (config.body) {
           body = config.body;
         } else {
@@ -54,41 +58,6 @@ export async function run() {
   }
 }
 
-type ChangedFile = { filename: string; patch: string };
-
-async function getChanges(client: ClientType): Promise<Changes> {
-  const { data: pullRequest } = await client.rest.pulls.get({
-    owner: github.context.repo.owner,
-    repo: github.context.repo.repo,
-    pull_number: github.context.issue.number,
-  });
-
-  const listFilesOptions = client.rest.pulls.listFiles.endpoint.merge({
-    owner: github.context.repo.owner,
-    repo: github.context.repo.repo,
-    pull_number: github.context.issue.number,
-  });
-
-  const listFilesResponse: ListFilesResponse =
-    await client.paginate(listFilesOptions);
-  const changedFiles = listFilesResponse.map((f) => ({
-    filename: f.filename,
-    patch: f.patch ?? "",
-  }));
-
-  core.debug("found changed files:");
-  for (const file of changedFiles) {
-    core.debug(" file: " + file.filename);
-    core.debug(" patch (first 100): " + file.patch.slice(0, 100));
-  }
-
-  return {
-    changedFiles,
-    author: pullRequest.user?.login,
-    labels: pullRequest.labels.map((label) => label.name),
-  };
-}
-
 async function addComment(client: ClientType, body: string): Promise<void> {
   await client.rest.issues.createComment({
     owner: github.context.repo.owner,
@@ -97,21 +66,6 @@ async function addComment(client: ClientType, body: string): Promise<void> {
     body,
   });
 }
-
-type ConfigurationWhereClause = {
-  path: {
-    matches: string;
-  };
-  additions_or_deletions?: {
-    contain: string[];
-  };
-  author?: {
-    any: string[];
-  };
-  labels?: {
-    any: string[];
-  };
-};
 
 type Configuration = {
   body: string | undefined;
@@ -143,33 +97,3 @@ async function fetchContent(client: ClientType, path: string): Promise<string> {
 
   return Buffer.from(response.data.content, response.data.encoding).toString();
 }
-
-type Changes = {
-  changedFiles: ChangedFile[];
-  author?: string;
-  labels: string[];
-};
-
-function matches(changes: Changes, where: ConfigurationWhereClause): boolean {
-  const { changedFiles, author, labels } = changes;
-  const matcher = new Minimatch(where.path.matches);
-
-  const hasFileMatch = changedFiles.some(
-    ({ filename, patch }) =>
-      matcher.match(filename) &&
-      (!where.additions_or_deletions ||
-        patchContains(patch, where.additions_or_deletions.contain)),
-  );
-
-  const hasAuthorMatch =
-    !where.author ||
-    (author !== undefined && where.author.any.includes(author));
-
-  const hasLabelMatch =
-    !where.labels || labels.some((label) => where.labels?.any.includes(label));
-
-  return hasFileMatch && hasAuthorMatch && hasLabelMatch;
-}
-
-const patchContains = (patch: string, needles: string[]) =>
-  needles.some((needle) => patch.includes(needle));
