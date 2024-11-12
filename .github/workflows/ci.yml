@@ -15,8 +15,9 @@ jobs:
           cache: yarn
           node-version-file: .nvmrc
       - run: yarn install
-      - run: yarn build
       - run: yarn test
+      - run: yarn build
+      - run: yarn lint
 
   integration:
     if: ${{ github.event_name == 'pull_request' }}
