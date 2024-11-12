@@ -1,4 +1,5 @@
 import * as github from "@actions/github";
+import * as yaml from "js-yaml";
 
 import { fetchRepoContent } from "./repo-content";
 import { ConfigurationWhereClause } from "./where";
@@ -12,17 +13,19 @@ export type Configuration = {
   where: ConfigurationWhereClause;
 };
 
+export type Configurations = Map<string, Configuration>;
+
 export async function getConfigurations(
   client: ClientType,
   configurationPath: string,
-): Promise<Map<string, Configuration>> {
+): Promise<Configurations> {
   const configurationContent: string = await fetchRepoContent(
     client,
     configurationPath,
   );
 
-  const configObject: any = yaml.load(configurationContent);
-  return configObject;
+  const configObject = yaml.load(configurationContent);
+  return configObject as Configurations;
 }
 
 export async function getCommentBody(
