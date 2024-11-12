@@ -1,3 +1,5 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
+
 import { run } from "../src/commenter";
 import * as github from "@actions/github";
 
