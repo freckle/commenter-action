@@ -3,7 +3,7 @@ description: "Automatically comment on pull requests based on the paths of files
 author: "Freckle"
 inputs:
   repo-token:
-    description: "The GITHUB_TOKEN secret"
+    description: "The `GITHUB_TOKEN` secret"
     default: "${{ github.token }}"
   configuration-path:
     description: "The path for the comment configurations"

@@ -1,10 +1,10 @@
 # Pull Request Commenter
 
-## Usage
-
-### Create `.github/commenter.yml`
+## Configuration
 
 ```yaml
+# .github/commenter.yml
+
 Backend:
   where:
     path:
@@ -32,25 +32,45 @@ The keys are ignored, and for your own organizational use. We will find the
 **first** stanza where the PR's changed files matches **any** of the given
 `paths` and add a comment with the given `body`.
 
-### Create a Workflow
+<!-- action-docs-usage action="action.yml" project="freckle/commenter-action" version="v1" -->
 
+## Usage
+
+```yaml
+- uses: freckle/commenter-action@v1
+  with:
+    repo-token:
+    # The `GITHUB_TOKEN` secret
+    #
+    # Required: false
+    # Default: ${{ github.token }}
+
+    configuration-path:
+    # The path for the comment configurations
+    #
+    # Required: false
+    # Default: .github/commenter.yml
+
+    body-file-prefix:
+    # The path for finding body markdown files
+    #
+    # Required: false
+    # Default: .github/commenter/
 ```
-name: Checklists
 
-on:
-  pull_request:
-    types: [opened]
+<!-- action-docs-usage action="action.yml" project="freckle/commenter-action" version="v1" -->
 
-jobs:
-  comment:
-    runs-on: ubuntu-latest
-    steps:
-    - uses: actions/commenter@v1
-```
+<!-- action-docs-inputs action="action.yml" -->
 
 ## Inputs
 
-See [`action.yml`](./action.yml).
+| name                 | description                                     | required | default                 |
+| -------------------- | ----------------------------------------------- | -------- | ----------------------- |
+| `repo-token`         | <p>The <code>GITHUB_TOKEN</code> secret</p>     | `false`  | `${{ github.token }}`   |
+| `configuration-path` | <p>The path for the comment configurations</p>  | `false`  | `.github/commenter.yml` |
+| `body-file-prefix`   | <p>The path for finding body markdown files</p> | `false`  | `.github/commenter/`    |
+
+<!-- action-docs-inputs action="action.yml" -->
 
 ## Permissions
 
@@ -64,8 +84,8 @@ permissions:
 
 These are required to be explicitly set for repositories with [restricted
 default access][perms] for workflows or to allow a workflow run triggered by
-Dependabot pull requests, which are run as if they are from a forked
-repository and use a read-only `GITHUB_TOKEN`.
+Dependabot pull requests, which are run as if they are from a forked repository
+and use a read-only `GITHUB_TOKEN`.
 
 [perms]: https://docs.github.com/en/actions/security-guides/automatic-token-authentication#permissions-for-the-github_token
 
