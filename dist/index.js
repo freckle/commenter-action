@@ -314,16 +314,42 @@ const minimatch_1 = __nccwpck_require__(6507);
 function matches(changes, where) {
     const { changedFiles, author, labels } = changes;
     const matcher = new minimatch_1.Minimatch(where.path.matches);
-    const hasFileMatch = changedFiles.some(({ filename, patch }) => matcher.match(filename) &&
-        (!where.additions_or_deletions ||
-            patchContains(patch, where.additions_or_deletions.contain)));
+    // Treat deprecated additions_or_deletions.contain as diff.contains, but note
+    // that if additions_or_deletions is present, diff is ignored.
+    const whereDiff = where.additions_or_deletions
+        ? { contains: where.additions_or_deletions.contain }
+        : where.diff;
+    const hasFileMatch = changedFiles.some(({ filename, patch: rawPatch }) => {
+        const patch = toPatch(rawPatch);
+        const matchedDiff = whereDiff ? matchesDiff(patch, whereDiff) : true;
+        return matcher.match(filename) && matchedDiff;
+    });
     const hasAuthorMatch = !where.author ||
         (author !== undefined && where.author.any.includes(author));
     const hasLabelMatch = !where.labels || labels.some((label) => { var _a; return (_a = where.labels) === null || _a === void 0 ? void 0 : _a.any.includes(label); });
     return hasFileMatch && hasAuthorMatch && hasLabelMatch;
 }
 exports.matches = matches;
-const patchContains = (patch, needles) => needles.some((needle) => patch.includes(needle));
+function toPatch(raw) {
+    const lines = raw.split("\n");
+    const added = lines.filter((x) => x.match(/^\+ /));
+    const removed = lines.filter((x) => x.match(/^- /));
+    return { added, removed, lines };
+}
+function matchesDiff({ added, removed, lines }, { contains, adds, removes }) {
+    const bs = [
+        contains && lines.length > 0
+            ? contains.some((x) => lines.some((l) => l.includes(x)))
+            : true,
+        adds && added.length > 0
+            ? adds.some((x) => added.some((l) => l.includes(x)))
+            : true,
+        removes && removed.length > 0
+            ? removes.some((x) => removed.some((l) => l.includes(x)))
+            : true,
+    ];
+    return bs.every((x) => x);
+}
 
 
 /***/ }),
