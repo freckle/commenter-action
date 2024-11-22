@@ -92,7 +92,7 @@ and use a read-only `GITHUB_TOKEN`.
 ## Additional Options
 
 You can also match based on specific file changes by supplying the
-`additions_or_deletions` `where`-clause configuration key.
+`diff` `where`-clause configuration key.
 
 For example, if you wanted to comment on any changes that contain the word
 "unsafe" you could supply a YAML configuration like the following
@@ -102,13 +102,16 @@ UnsafeMentionedInCode:
   where:
     path:
       matches: "backend/**/*.hs"
-    additions_or_deletions:
-      contain:
+    diff:
+      contains:
         - unsafe
   body: |
     :wave: Hi, I see a mention of "unsafe" in Haskell code. If you removed it,
     good going! If you added it, please consider finding a safer alternative!
 ```
+
+`diff.adds` and `diff.removes` are also supported, to match on specifically
+additions or removals of certain text.
 
 Use `where.author.any` to only comment on PRs that authored by specific users,
 and `where.labels.any` to only comment when specific labels are present. Keep
