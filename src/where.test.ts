@@ -12,7 +12,7 @@ const changes: Changes = {
   changedFiles: [
     {
       filename: "foo.ts",
-      patch: "+ adding unsafe",
+      patch: "+ adding unsafe\n- removing safe\n",
     },
     {
       filename: "bar.ts",
@@ -20,7 +20,7 @@ const changes: Changes = {
     },
     {
       filename: "baz/quiz.ts",
-      patch: "",
+      patch: "- removing important\n+ adding unimportant\n",
     },
   ],
   author: "pbrisbin",
@@ -49,6 +49,30 @@ const matched: TestCase[] = [
     clause: {
       path: { matches: "baz/*.ts" },
       labels: { any: ["v2"] },
+    },
+  },
+  {
+    attr: "diff.contains",
+    changes,
+    clause: {
+      path: { matches: "foo.ts" },
+      diff: { contains: ["unsafe"] },
+    },
+  },
+  {
+    attr: "diff.adds",
+    changes,
+    clause: {
+      path: { matches: "foo.ts" },
+      diff: { adds: ["unsafe"] },
+    },
+  },
+  {
+    attr: "diff.removes",
+    changes,
+    clause: {
+      path: { matches: "baz/quiz.ts" },
+      diff: { removes: ["important"] },
     },
   },
   {
@@ -83,6 +107,30 @@ const missed: TestCase[] = [
     clause: {
       path: { matches: "baz/*.ts" },
       labels: { any: ["bugfix"] },
+    },
+  },
+  {
+    attr: "diff.contains",
+    changes,
+    clause: {
+      path: { matches: "foo.ts" },
+      diff: { contains: ["something else"] },
+    },
+  },
+  {
+    attr: "diff.adds",
+    changes,
+    clause: {
+      path: { matches: "foo.ts" },
+      diff: { adds: ["important"] },
+    },
+  },
+  {
+    attr: "diff.removes",
+    changes,
+    clause: {
+      path: { matches: "baz/quiz.ts" },
+      diff: { removes: ["something"] },
     },
   },
   {
