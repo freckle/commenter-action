@@ -1273,7 +1273,7 @@ acorn@^8.15.0:
   resolved "https://registry.yarnpkg.com/acorn/-/acorn-8.15.0.tgz#a360898bc415edaac46c8241f6383975b930b816"
   integrity sha512-NZyJarBfL7nWwIq+FDL6Zp/yHEhePMNnnJ0y3qfieCrmNvYct8uvtiV41UvlSe6apAfk0fY1FbWx+NwfmpvtTg==
 
-action-docs@^2.5.0:
+action-docs@^2.5.1:
   version "2.5.1"
   resolved "https://registry.yarnpkg.com/action-docs/-/action-docs-2.5.1.tgz#6ec3ab8bb5e8f33ccbc34a3d879a797c0d814baf"
   integrity sha512-kACC20UOsuVifAEYZAAMsm+Lpq14nWXM3FDbIUqUiu7s3KtlGSfRG5btboYIGNomZQ5coTc/UR1F5H9yRqTAEw==

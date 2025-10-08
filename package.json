@@ -30,7 +30,7 @@
     "@types/minimatch": "^6.0.0",
     "@types/node": "^22.18.8",
     "@vercel/ncc": "^0.38.4",
-    "action-docs": "^2.5.0",
+    "action-docs": "^2.5.1",
     "eslint": "^9.23.0",
     "jest": "^30.0.0",
     "prettier": "^3.5.3",
