@@ -33,7 +33,7 @@
     "action-docs": "^2.5.1",
     "eslint": "^9.37.0",
     "jest": "^30.0.5",
-    "prettier": "^3.5.3",
+    "prettier": "^3.6.2",
     "ts-jest": "^29.0.0",
     "typescript": "^5.0.0",
     "typescript-eslint": "^8.28.0"
