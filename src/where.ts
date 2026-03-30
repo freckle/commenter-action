@@ -1,6 +1,6 @@
 import { Minimatch } from "minimatch";
 
-import type { Changes } from "./changes";
+import type { Changes } from "./changes.js"
 
 export type ConfigurationWhereClause = {
   path: {

@@ -1,3 +1,3 @@
-import { run } from "./commenter";
+import { run } from "./commenter.js"
 
 run();

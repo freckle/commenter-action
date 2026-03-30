@@ -1,9 +1,9 @@
 import * as core from "@actions/core";
 import * as github from "@actions/github";
 
-import { getChanges } from "./changes";
-import { getConfigurations, getCommentBody } from "./configuration";
-import * as where from "./where";
+import { getChanges } from "./changes.js";
+import { getConfigurations, getCommentBody } from "./configuration.js";
+import * as where from "./where.js";
 
 type ClientType = ReturnType<typeof github.getOctokit>;
 
