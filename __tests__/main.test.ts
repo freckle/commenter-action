@@ -1,33 +1,31 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 
-import { run } from "../src/commenter";
+import { describe, expect, it, vi } from "vitest";
 import * as github from "@actions/github";
+import * as fs from "fs";
 
-const fs = jest.requireActual("fs");
+import { run } from "../src/commenter";
 
-jest.mock("@actions/core");
-jest.mock("@actions/github");
+vi.mock("@actions/core");
+vi.mock("@actions/github");
 
 const gh = github.getOctokit("_");
-const createCommentMock = jest.spyOn(gh.rest.issues, "createComment");
-const reposMock = jest.spyOn(gh.rest.repos, "getContent");
-const paginateMock = jest.spyOn(gh, "paginate");
-const getPullMock = jest.spyOn(gh.rest.pulls, "get");
+const createCommentMock = vi.spyOn(gh.rest.issues, "createComment");
+const reposMock = vi.spyOn(gh.rest.repos, "getContent");
+const paginateMock = vi.spyOn(gh, "paginate");
+const getPullMock = vi.spyOn(gh.rest.pulls, "get");
 
-const yamlFixtures = {
-  "only_pdfs.yml": fs.readFileSync("__tests__/fixtures/only_pdfs.yml"),
-  "patch_contains.yml": fs.readFileSync(
-    "__tests__/fixtures/patch_contains.yml",
-  ),
-  "author.yml": fs.readFileSync("__tests__/fixtures/author.yml"),
-  "labels.yml": fs.readFileSync("__tests__/fixtures/labels.yml"),
-  "all_conditions.yml": fs.readFileSync(
-    "__tests__/fixtures/all_conditions.yml",
-  ),
-  "body_file.yml": fs.readFileSync("__tests__/fixtures/body_file.yml"),
-};
-
-afterAll(() => jest.restoreAllMocks());
+const yamlFixtures = [
+  "only_pdfs.yml",
+  "patch_contains.yml",
+  "author.yml",
+  "labels.yml",
+  "all_conditions.yml",
+  "body_file.yml",
+].reduce((acc, x) => {
+  acc[x] = fs.readFileSync(`__tests__/fixtures/${x}`).toString();
+  return acc;
+}, {});
 
 describe("run", () => {
   it("adds comments to PRs that match our glob patterns", async () => {
@@ -206,7 +204,7 @@ describe("run", () => {
   });
 });
 
-function usingConfigYaml(fixtureName: keyof typeof yamlFixtures): void {
+function usingConfigYaml(fixtureName: string): void {
   mockGitHubResponseGetContentOnce(yamlFixtures[fixtureName]);
 }
 

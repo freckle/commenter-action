@@ -1,8 +1,8 @@
 import * as github from "@actions/github";
 import * as yaml from "js-yaml";
 
-import { fetchRepoContent } from "./repo-content";
-import { ConfigurationWhereClause } from "./where";
+import { fetchRepoContent } from "./repo-content.js";
+import { ConfigurationWhereClause } from "./where.js";
 
 type ClientType = ReturnType<typeof github.getOctokit>;
 
@@ -33,7 +33,7 @@ export async function getCommentBody(
   bodyFilePrefix: string,
   name: string,
   config: Configuration,
-): Promise<string | null> {
+): Promise<string> {
   if (config.body) {
     return config.body;
   } else {
@@ -41,6 +41,4 @@ export async function getCommentBody(
     const bodyFile = config["body-file"] ?? `${bodyFilePrefix}${bodyFileName}`;
     return await fetchRepoContent(client, bodyFile);
   }
-
-  return null;
 }

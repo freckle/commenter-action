@@ -1,3 +1,5 @@
+import { vi } from "vitest";
+
 export const context = {
   payload: {
     pull_request: {
@@ -17,26 +19,28 @@ export const context = {
 const mockApi = {
   rest: {
     issues: {
-      createComment: jest.fn(),
+      createComment: vi.fn(),
     },
     pulls: {
-      get: jest.fn().mockResolvedValue({
-        data: {
-          user: {},
-          labels: [],
-        },
+      get: vi.fn(() => {
+        return {
+          data: {
+            user: {},
+            labels: [],
+          },
+        };
       }),
       listFiles: {
         endpoint: {
-          merge: jest.fn().mockReturnValue({}),
+          merge: vi.fn(() => {}),
         },
       },
     },
     repos: {
-      getContent: jest.fn(),
+      getContent: vi.fn(),
     },
   },
-  paginate: jest.fn(),
+  paginate: vi.fn(),
 };
 
-export const getOctokit = jest.fn().mockImplementation(() => mockApi);
+export const getOctokit = vi.fn(() => mockApi);
