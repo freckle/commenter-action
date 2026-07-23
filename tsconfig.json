@@ -19,8 +19,7 @@
     "esModuleInterop": true,
     "strict": true,
     "isolatedModules": true,
-    "types": ["node"]
+    "types": ["node", "vitest/globals"]
   },
-  "include": ["./src/**/*"],
-  "exclude": ["node_modules", "__tests__", "__mocks__"]
+  "include": ["./src/**/*"]
 }

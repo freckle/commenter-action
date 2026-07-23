@@ -5,7 +5,7 @@
   "description": "Comments on pull requests by files altered",
   "main": "lib/main.js",
   "scripts": {
-    "build": "tsc && ncc build lib/main.js",
+    "build": "tsc -p tsconfig.build.json && ncc build lib/main.js --minify",
     "format": "prettier --write \"**/*.ts\"",
     "format-check": "prettier --check \"**/*.ts\"",
     "test": "vitest run",
