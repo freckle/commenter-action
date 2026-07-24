@@ -1,3 +1,4 @@
+import * as core from "@actions/core";
 import * as github from "@actions/github";
 
 type ClientType = ReturnType<typeof github.getOctokit>;
@@ -12,6 +13,7 @@ export async function fetchRepoContent(
   client: ClientType,
   path: string,
 ): Promise<string> {
+  core.info(`[github] Fetching file content ${path}`);
   const response = await client.rest.repos.getContent({
     owner: github.context.repo.owner,
     repo: github.context.repo.repo,
@@ -32,6 +34,7 @@ export async function listRepoContent(
   client: ClientType,
   prefix: string,
 ): Promise<Map<string, string>> {
+  core.info(`[github] Listing directory content ${prefix}`);
   const response = await client.rest.repos.getContent({
     owner: github.context.repo.owner,
     repo: github.context.repo.repo,
@@ -40,12 +43,14 @@ export async function listRepoContent(
   });
 
   const paths = new Map();
+  const prefixRe = new RegExp(`^${prefix}`);
 
   const entries = response.data as RepoPathEntry[];
   await entries.forEach(async (entry: RepoPathEntry) => {
     if (entry.type === "file") {
+      // Return relative paths, mainly because that's more useful for us
       const content = await fetchRepoContent(client, entry.path);
-      paths.set(entry.path, content);
+      paths.set(entry.path.replace(prefixRe, ""), content);
     }
   });
 

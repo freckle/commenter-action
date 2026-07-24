@@ -29,6 +29,7 @@ export async function getConfigurations(
   );
 
   const raw = yaml.load(configurationContent) as Map<string, ConfigurationYaml>;
+
   return await fromConfigurationYaml(client, bodyFiles, raw);
 }
 
@@ -44,7 +45,7 @@ async function fromConfigurationYaml(
   bodyFiles: Map<string, string>,
   raw: Map<string, ConfigurationYaml>,
 ): Promise<Configurations> {
-  const configs: Configurations = new Map();
+  const configs = fromFrontmatters(bodyFiles);
 
   await Object.entries(raw).forEach(async ([name, config]) => {
     const { where } = config;
@@ -74,4 +75,35 @@ async function fromConfigurationYaml(
   });
 
   return configs;
+}
+
+// exported for testing
+export function fromFrontmatters(
+  bodyFiles: Map<string, string>,
+): Configurations {
+  const configs = new Map();
+
+  Object.entries(bodyFiles).forEach(([path, content]) => {
+    const name = path.replace(/\.md$/, "");
+    const { frontMatter, body } = splitFrontMatter(content);
+
+    if (frontMatter) {
+      const raw = yaml.load(frontMatter) as ConfigurationYaml;
+      configs.set(name, { where: raw.where, body });
+    }
+  });
+
+  return configs;
+}
+
+type Markdown = {
+  frontMatter: string | null;
+  body: string;
+};
+
+function splitFrontMatter(content: string): Markdown {
+  return {
+    frontMatter: null, // TODO
+    body: content,
+  };
 }
