@@ -13,6 +13,12 @@ inputs:
     description: "The path for finding body markdown files"
     default: ".github/commenter/"
     required: false
+  on-multi-match:
+    description: |
+      How to handle when multiple stanzas match the changes. Can be one of
+      "all", "first", or "last". Default is "last".
+    default: "last"
+    required: false
 
 runs:
   using: "node24"
