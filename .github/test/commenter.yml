@@ -15,12 +15,12 @@ ExampleExplictBodyFileName:
   where:
     path:
       matches: ".github/test/commenter/example-explicit.md"
-      body-file-name: "example-explicit.md"
+  body-file-name: "example-explicit.md"
 
 ExampleExplictBodyFile:
   where:
     path:
       matches: ".github/test/example-explicit.md"
-      body-file: ".github/test/example-explicit.md"
+  body-file: ".github/test/example-explicit.md"
 
 # There is also .github/test/commenter/frontmatter.md
