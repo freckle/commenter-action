@@ -4,5 +4,9 @@ where:
     matches: ".github/test/commenter/frontmatter.md"
 ---
 
-This is a commented used by integration tests. It can be used by touching the
-test/commenter/frontmatter.md file in a PR.
+**This commented is added by integration tests**
+
+This file include YAML frontmatter, rather than being defined in the main YAML
+configuration. It can triggered by touching this file in a PR:
+
+`.github/test/commenter/frontmatter.md`

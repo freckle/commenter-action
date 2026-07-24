@@ -1,2 +1,6 @@
-This is a commented used by integration tests. It can be used by touching the
-test/commenter/example-explicit.md file in a PR.
+**This commented is added by integration tests**
+
+This file defines an explicit `body-file-name`, but uses the configured prefix.
+It can be triggered by touching this file in a PR:
+
+`.github/test/commenter/example-explicit.md`

@@ -3,8 +3,10 @@ Example:
     path:
       matches: ".github/test/commenter.yml"
   body: |
-    This is a commented used by integration tests. It can be used by touching
-    the test/commenter.yml file in a PR.
+    **This commented is added by integration tests**
+
+    Its body is defined using `body` in the YAML configuration. It can be
+    triggered by touching the `.github/test/commenter.yml' file in a PR.
 
 ExampleImplicitBodyFile:
   where:
