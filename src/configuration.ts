@@ -45,8 +45,8 @@ async function fromConfigurationYaml(
 ): Promise<Configuration[]> {
   const configs: Configuration[] = [];
 
-  for (const config of raw.values()) {
-    const body = await fromConfigurationBody(client, bodyFiles, config);
+  for (const [name, config] of raw.entries()) {
+    const body = await fromConfigurationBody(client, bodyFiles, name, config);
 
     if (body) {
       configs.push({ where: config.where, body });
@@ -62,6 +62,7 @@ async function fromConfigurationYaml(
 async function fromConfigurationBody(
   client: ClientType,
   bodyFiles: Map<string, string>,
+  name: string,
   config: ConfigurationYaml,
 ): Promise<string | null> {
   // body given in yaml, use it
