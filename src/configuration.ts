@@ -26,8 +26,9 @@ export async function getConfigurations(
     bodyFilePrefix,
   );
 
-  const raw = yaml.load(configurationContent) as Map<string, ConfigurationYaml>;
-  return await fromConfigurationYaml(client, bodyFiles, raw);
+  const raw = yaml.load(configurationContent) as object;
+  const map = new Map(Object.entries(raw));
+  return await fromConfigurationYaml(client, bodyFiles, map);
 }
 
 type ConfigurationYaml = {
