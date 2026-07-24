@@ -2,7 +2,7 @@ import * as core from "@actions/core";
 import * as github from "@actions/github";
 
 import { getChanges } from "./changes.js";
-import { getConfigurations, getCommentBody } from "./configuration.js";
+import { getConfigurations } from "./configuration.js";
 import * as where from "./where.js";
 
 type ClientType = ReturnType<typeof github.getOctokit>;
@@ -17,7 +17,7 @@ export async function run() {
     const onMultiMatch = core.getInput("on-multi-match", { required: true });
 
     const client: ClientType = github.getOctokit(token);
-    const configs = await getConfigurations(client, configPath);
+    const configs = await getConfigurations(client, configPath, bodyFilePrefix);
     const changes = await getChanges(client);
 
     core.debug(`changes: ${JSON.stringify(changes)}`);
@@ -29,8 +29,7 @@ export async function run() {
 
       if (where.matches(changes, config.where)) {
         core.info("matched");
-        const body = await getCommentBody(client, bodyFilePrefix, name, config);
-        bodies.push(body);
+        bodies.push(config.body);
       }
     }
 
