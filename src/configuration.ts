@@ -1,3 +1,4 @@
+import * as core from "@actions/core";
 import * as github from "@actions/github";
 import * as yaml from "js-yaml";
 
@@ -39,6 +40,7 @@ export async function getCommentBody(
   } else {
     const bodyFileName = config["body-file-name"] ?? `${name}.md`;
     const bodyFile = config["body-file"] ?? `${bodyFilePrefix}${bodyFileName}`;
+    core.info(`Fetching comment body from: ${bodyFile}`);
     return await fetchRepoContent(client, bodyFile);
   }
 }

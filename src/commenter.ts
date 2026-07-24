@@ -20,7 +20,7 @@ export async function run() {
     const configs = await getConfigurations(client, configPath);
     const changes = await getChanges(client);
 
-    core.info(`changes: ${JSON.stringify(changes)}`);
+    core.debug(`changes: ${JSON.stringify(changes)}`);
 
     const bodies: string[] = [];
 
