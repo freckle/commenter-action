@@ -34,7 +34,7 @@ export async function run() {
       }
     }
 
-    core.info(`Found ${bodies.length} matching stanzas`);
+    core.info(`Found ${bodies.length} matching stanza(s)`);
 
     const addComments = async (bodies: string[]): Promise<void> => {
       await bodies.forEach(async (body) => {
