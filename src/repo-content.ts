@@ -32,8 +32,11 @@ type RepoPathEntry = {
 
 export async function listRepoContent(
   client: ClientType,
-  prefix: string,
+  dir: string,
 ): Promise<Map<string, string>> {
+  const prefix = dir.replace(/\/$/, ""); // drop any trailing slash
+  const prefixRe = new RegExp(`^${prefix}/`); // strip including trailing slash
+
   core.info(`[github] Listing directory content ${prefix}`);
   const response = await client.rest.repos.getContent({
     owner: github.context.repo.owner,
@@ -43,7 +46,6 @@ export async function listRepoContent(
   });
 
   const paths = new Map();
-  const prefixRe = new RegExp(`^${prefix}`);
 
   const entries = response.data as RepoPathEntry[];
   await entries.forEach(async (entry: RepoPathEntry) => {
