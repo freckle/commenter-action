@@ -1,7 +1,7 @@
 import * as github from "@actions/github";
 import * as yaml from "js-yaml";
 
-import { fetchRepoContent } from "./repo-content.js";
+import { fetchRepoContent, listRepoContent } from "./repo-content.js";
 import { ConfigurationWhereClause } from "./where.js";
 
 type ClientType = ReturnType<typeof github.getOctokit>;
@@ -18,13 +18,18 @@ export async function getConfigurations(
   configurationPath: string,
   bodyFilePrefix: string,
 ): Promise<Configurations> {
+  const bodyFiles: Map<string, string> = await listRepoContent(
+    client,
+    bodyFilePrefix,
+  );
+
   const configurationContent: string = await fetchRepoContent(
     client,
     configurationPath,
   );
 
   const raw = yaml.load(configurationContent) as Map<string, ConfigurationYaml>;
-  return fromConfigurationYaml(client, bodyFilePrefix, raw);
+  return await fromConfigurationYaml(client, bodyFiles, raw);
 }
 
 type ConfigurationYaml = {
@@ -36,20 +41,36 @@ type ConfigurationYaml = {
 
 async function fromConfigurationYaml(
   client: ClientType,
-  bodyFilePrefix: string,
+  bodyFiles: Map<string, string>,
   raw: Map<string, ConfigurationYaml>,
 ): Promise<Configurations> {
   const configs: Configurations = new Map();
 
-  await raw.forEach(async (config, name) => {
+  await Object.entries(raw).forEach(async ([name, config]) => {
     const { where } = config;
-    const bodyFileName = config["body-file-name"] ?? `${name}.md`;
-    const bodyFile = config["body-file"] ?? `${bodyFilePrefix}${bodyFileName}`;
-    const body = config.body
-      ? config.body
-      : await fetchRepoContent(client, bodyFile);
 
-    configs.set(name, { where, body });
+    if (config.body) {
+      // Body given in yaml, use it
+      configs.set(name, { where, body: config.body });
+      return;
+    }
+
+    if (config["body-file"]) {
+      // body-file given, may be anywhere in repository, fetch it
+      const body = await fetchRepoContent(client, config["body-file"]);
+      configs.set(name, { where, body });
+      return;
+    }
+
+    // body-file-name (or default) is expected in the prefix directory, look it
+    // up in the map we already have (ignore if not found)
+    const bodyFileName = config["body-file-name"] ?? `${name}.md`;
+    const body = bodyFiles.get(bodyFileName);
+
+    if (body) {
+      configs.set(name, { where, body });
+      return; // unnecessary, but in case we refactor later
+    }
   });
 
   return configs;
