@@ -53,24 +53,19 @@ async function fromConfigurationYaml(
     if (config.body) {
       // Body given in yaml, use it
       configs.set(name, { where, body: config.body });
-      return;
-    }
-
-    if (config["body-file"]) {
+    } else if (config["body-file"]) {
       // body-file given, may be anywhere in repository, fetch it
       const body = await fetchRepoContent(client, config["body-file"]);
       configs.set(name, { where, body });
-      return;
-    }
+    } else {
+      // body-file-name (or default) is expected in the prefix directory, look
+      // it up in the map we already have (ignore if not found)
+      const bodyFileName = config["body-file-name"] ?? `${name}.md`;
+      const body = bodyFiles.get(bodyFileName);
 
-    // body-file-name (or default) is expected in the prefix directory, look it
-    // up in the map we already have (ignore if not found)
-    const bodyFileName = config["body-file-name"] ?? `${name}.md`;
-    const body = bodyFiles.get(bodyFileName);
-
-    if (body) {
-      configs.set(name, { where, body });
-      return; // unnecessary, but in case we refactor later
+      if (body) {
+        configs.set(name, { where, body });
+      }
     }
   });
 
