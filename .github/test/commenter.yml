@@ -1,0 +1,26 @@
+Example:
+  where:
+    path:
+      matches: ".github/test/commenter.yml"
+  body: |
+    This is a commented used by integration tests. It can be used by touching
+    the test/commenter.yml file in a PR.
+
+ExampleImplicitBodyFile:
+  where:
+    path:
+      matches: ".github/test/commenter/ExampleImplicitBodyFile.md"
+
+ExampleExplictBodyFileName:
+  where:
+    path:
+      matches: ".github/test/commenter/example-explicit.md"
+      body-file-name: "example-explicit.md"
+
+ExampleExplictBodyFile:
+  where:
+    path:
+      matches: ".github/test/example-explicit.md"
+      body-file: ".github/test/example-explicit.md"
+
+# There is also .github/test/commenter/frontmatter.md
