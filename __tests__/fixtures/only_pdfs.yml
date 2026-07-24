@@ -1,6 +1,0 @@
-touched-a-pdf-file:
-  where:
-    path:
-      matches: "*.pdf"
-  body: |
-    The comment body

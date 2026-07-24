@@ -1,9 +1,0 @@
-patch-matches-within-file:
-  where:
-    path:
-      matches: "*.sql"
-    diff:
-      contains:
-        - TRUNCATE
-  body: |
-    Looks like you changed a TRUNCATE line...

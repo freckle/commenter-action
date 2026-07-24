@@ -1,9 +1,0 @@
-author-match:
-  where:
-    path:
-      matches: "*.sql"
-    author:
-      any:
-        - bot
-  body: |
-    This change requires human review
