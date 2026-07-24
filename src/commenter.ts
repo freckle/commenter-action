@@ -1,8 +1,8 @@
 import * as core from "@actions/core";
 import * as github from "@actions/github";
 
-import { getChanges } from "./changes.js";
-import { getConfigurations } from "./configuration.js";
+import { type Changes, getChanges } from "./changes.js";
+import { type Configuration, getConfigurations } from "./configuration.js";
 import * as where from "./where.js";
 
 type ClientType = ReturnType<typeof github.getOctokit>;
@@ -17,52 +17,17 @@ export async function run() {
     const onMultiMatch = core.getInput("on-multi-match", { required: true });
 
     const client: ClientType = github.getOctokit(token);
-    const configs = await getConfigurations(client, configPath, bodyFilePrefix);
-    const changes = await getChanges(client);
 
+    const configs = await getConfigurations(client, configPath, bodyFilePrefix);
+    core.debug(`configs: ${JSON.stringify(configs)}`);
+
+    const changes = await getChanges(client);
     core.debug(`changes: ${JSON.stringify(changes)}`);
 
-    const bodies: string[] = [];
-
-    for (const [name, config] of Object.entries(configs)) {
-      core.info(`${name} => ${JSON.stringify(config)}`);
-
-      if (where.matches(changes, config.where)) {
-        core.info("matched");
-        bodies.push(config.body);
-      }
-    }
-
+    const bodies = getMatchingBodies(configs, changes);
     core.info(`Found ${bodies.length} matching stanza(s)`);
 
-    const addComments = async (bodies: string[]): Promise<void> => {
-      await bodies.forEach(async (body) => {
-        await addComment(client, body);
-      });
-    };
-
-    if (bodies.length > 0) {
-      switch (onMultiMatch) {
-        case "all":
-          core.info(`Adding ${bodies.length} matching comment(s)`);
-          await addComments(bodies);
-          break;
-        case "first":
-          core.info(`Adding first of ${bodies.length} matching comment(s)`);
-          await addComments(bodies.slice(0, 1));
-          break;
-        case "last":
-          core.info(`Adding last of ${bodies.length} matching comment(s)`);
-          await addComments(bodies.slice(-1));
-          break;
-        default:
-          core.warning(
-            `Invalid on-multi-match (${onMultiMatch}), must be all|first|last.`,
-          );
-          core.info(`Adding first of ${bodies.length} matching comment(s)`);
-          await addComments(bodies.slice(0, 1));
-      }
-    }
+    addCommentBodies(client, onMultiMatch, bodies);
   } catch (error) {
     // Refine unknown type
     if (error instanceof Error) {
@@ -78,11 +43,57 @@ export async function run() {
   }
 }
 
-async function addComment(client: ClientType, body: string): Promise<void> {
-  await client.rest.issues.createComment({
-    owner: github.context.repo.owner,
-    repo: github.context.repo.repo,
-    issue_number: github.context.issue.number,
-    body,
+function getMatchingBodies(
+  configs: Configuration[],
+  changes: Changes,
+): string[] {
+  const bodies: string[] = [];
+
+  configs.forEach((config) => {
+    if (where.matches(changes, config.where)) {
+      bodies.push(config.body);
+    }
   });
+
+  return bodies;
+}
+
+async function addCommentBodies(
+  client: ClientType,
+  onMultiMatch: string,
+  bodies: string[],
+): Promise<void> {
+  const addComments = async (bodies: string[]): Promise<void> => {
+    await bodies.forEach(async (body) => {
+      await client.rest.issues.createComment({
+        owner: github.context.repo.owner,
+        repo: github.context.repo.repo,
+        issue_number: github.context.issue.number,
+        body,
+      });
+    });
+  };
+
+  if (bodies.length > 0) {
+    switch (onMultiMatch) {
+      case "all":
+        core.info(`Adding ${bodies.length} matching comment(s)`);
+        await addComments(bodies);
+        break;
+      case "first":
+        core.info(`Adding first of ${bodies.length} matching comment(s)`);
+        await addComments(bodies.slice(0, 1));
+        break;
+      case "last":
+        core.info(`Adding last of ${bodies.length} matching comment(s)`);
+        await addComments(bodies.slice(-1));
+        break;
+      default:
+        core.warning(
+          `Invalid on-multi-match (${onMultiMatch}), must be all|first|last.`,
+        );
+        core.info(`Adding first of ${bodies.length} matching comment(s)`);
+        await addComments(bodies.slice(0, 1));
+    }
+  }
 }

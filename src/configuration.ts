@@ -11,25 +11,22 @@ export type Configuration = {
   body: string;
 };
 
-export type Configurations = Map<string, Configuration>;
-
 export async function getConfigurations(
   client: ClientType,
   configurationPath: string,
   bodyFilePrefix: string,
-): Promise<Configurations> {
-  const bodyFiles: Map<string, string> = await listRepoContent(
-    client,
-    bodyFilePrefix,
-  );
-
+): Promise<Configuration[]> {
   const configurationContent: string = await fetchRepoContent(
     client,
     configurationPath,
   );
 
-  const raw = yaml.load(configurationContent) as Map<string, ConfigurationYaml>;
+  const bodyFiles: Map<string, string> = await listRepoContent(
+    client,
+    bodyFilePrefix,
+  );
 
+  const raw = yaml.load(configurationContent) as Map<string, ConfigurationYaml>;
   return await fromConfigurationYaml(client, bodyFiles, raw);
 }
 
@@ -44,49 +41,55 @@ async function fromConfigurationYaml(
   client: ClientType,
   bodyFiles: Map<string, string>,
   raw: Map<string, ConfigurationYaml>,
-): Promise<Configurations> {
-  const configs = fromFrontmatters(bodyFiles);
+): Promise<Configuration[]> {
+  const configs: Configuration[] = [];
 
-  await Object.entries(raw).forEach(async ([name, config]) => {
-    const { where } = config;
+  for (const config of raw.values()) {
+    const body = await fromConfigurationBody(client, bodyFiles, config);
 
-    if (config.body) {
-      // Body given in yaml, use it
-      configs.set(name, { where, body: config.body });
-    } else if (config["body-file"]) {
-      // body-file given, may be anywhere in repository, fetch it
-      const body = await fetchRepoContent(client, config["body-file"]);
-      configs.set(name, { where, body });
-    } else {
-      // body-file-name (or default) is expected in the prefix directory, look
-      // it up in the map we already have (ignore if not found)
-      const bodyFileName = config["body-file-name"] ?? `${name}.md`;
-      const body = bodyFiles.get(bodyFileName);
-
-      if (body) {
-        configs.set(name, { where, body });
-      }
+    if (body) {
+      configs.push({ where: config.where, body });
     }
-  });
+  }
+
+  // Add any frontmatter files
+  fromFrontmatters(bodyFiles).forEach((x) => configs.push(x));
 
   return configs;
 }
 
-// exported for testing
-export function fromFrontmatters(
+async function fromConfigurationBody(
+  client: ClientType,
   bodyFiles: Map<string, string>,
-): Configurations {
-  const configs = new Map();
+  config: ConfigurationYaml,
+): Promise<string | null> {
+  // body given in yaml, use it
+  if (config.body) {
+    return config.body;
+  }
 
-  Object.entries(bodyFiles).forEach(([path, content]) => {
-    const name = path.replace(/\.md$/, "");
+  // body-file given, may be anywhere in repository, fetch it
+  if (config["body-file"]) {
+    return await fetchRepoContent(client, config["body-file"]);
+  }
+
+  // body-file-name (or default) is expected in the prefix directory, look
+  // it up in the map we already have (ignore if not found)
+  const bodyFileName = config["body-file-name"] ?? `${name}.md`;
+  return bodyFiles.get(bodyFileName) ?? null;
+}
+
+function fromFrontmatters(bodyFiles: Map<string, string>): Configuration[] {
+  const configs: Configuration[] = [];
+
+  for (const content of bodyFiles.values()) {
     const { frontMatter, body } = splitFrontMatter(content);
 
     if (frontMatter) {
       const raw = yaml.load(frontMatter) as ConfigurationYaml;
-      configs.set(name, { where: raw.where, body });
+      configs.push({ where: raw.where, body });
     }
-  });
+  }
 
   return configs;
 }
