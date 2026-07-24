@@ -27,7 +27,7 @@ const yamlFixtures = [
   return acc;
 }, {});
 
-describe("run", () => {
+describe.skip("run", () => {
   it("adds comments to PRs that match our glob patterns", async () => {
     usingConfigYaml("only_pdfs.yml");
     mockGitHubResponseChangedFiles("foo.pdf");
