@@ -64,7 +64,7 @@ async function fromConfigurationBody(
   bodyFiles: Map<string, string>,
   name: string,
   config: ConfigurationYaml,
-): Promise<string | null> {
+): Promise<string | undefined> {
   // body given in yaml, use it
   if (config.body) {
     return config.body;
@@ -78,7 +78,7 @@ async function fromConfigurationBody(
   // body-file-name (or default) is expected in the prefix directory, look
   // it up in the map we already have (ignore if not found)
   const bodyFileName = config["body-file-name"] ?? `${name}.md`;
-  return bodyFiles.get(bodyFileName) ?? null;
+  return bodyFiles.get(bodyFileName);
 }
 
 function fromFrontmatters(bodyFiles: Map<string, string>): Configuration[] {
