@@ -1,3 +1,4 @@
+import * as core from "@actions/core";
 import * as github from "@actions/github";
 import * as yaml from "js-yaml";
 
@@ -27,17 +28,23 @@ export async function getConfigurations(
     bodyFilePrefix,
   );
 
-  const raw = yaml.load(configurationContent) as object;
-  const map = new Map(Object.entries(raw));
+  const map = loadConfigationYaml(configurationContent);
   return await fromConfigurationYaml(client, bodyFiles, map);
 }
 
-type ConfigurationYaml = {
+export type ConfigurationYaml = {
   body: string | undefined;
   "body-file": string | undefined;
   "body-file-name": string | undefined;
   where: ConfigurationWhereClause;
 };
+
+export function loadConfigationYaml(
+  content: string,
+): Map<string, ConfigurationYaml> {
+  const obj = yaml.load(content) as object;
+  return new Map(Object.entries(obj));
+}
 
 async function fromConfigurationYaml(
   client: ClientType,
@@ -51,6 +58,13 @@ async function fromConfigurationYaml(
 
     if (body) {
       configs.push({ name, where: config.where, body });
+    } else {
+      core.warning(
+        `Configuration ${name} without body will be ignored:\n${JSON.stringify({
+          "body-file-name": config["body-file-name"],
+          "body-file": config["body-file"],
+        })}`,
+      );
     }
   }
 
