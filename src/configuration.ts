@@ -63,7 +63,6 @@ async function fromConfigurationYaml(
 
   // Add any frontmatter files
   fromFrontmatters(bodyFiles).forEach((x) => {
-    core.debug(`Adding configuration from frontmatter: ${x.name}`);
     configs.push(x);
   });
 
@@ -78,21 +77,17 @@ async function fromConfigurationBody(
 ): Promise<string | undefined> {
   // body given in yaml, use it
   if (config.body) {
-    core.debug("Using in-config body");
     return config.body;
   }
 
   // body-file given, may be anywhere in repository, fetch it
   if (config["body-file"]) {
-    core.debug(`Fetching ${config["body-file"]}`);
     return await github.fetchRepoContent(gh, "TODO", config["body-file"]);
   }
 
   // body-file-name (or default) is expected in the prefix directory, look
   // it up in the map we already have (ignore if not found)
   const bodyFileName = config["body-file-name"] ?? `${name}.md`;
-
-  core.debug(`Looking up ${bodyFileName} in prefix`);
   return bodyFiles.get(bodyFileName);
 }
 

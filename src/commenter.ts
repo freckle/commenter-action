@@ -1,6 +1,6 @@
 import * as core from "@actions/core";
 
-import { type Configuration, getConfigurations } from "./configuration.js";
+import { Configuration, getConfigurations } from "./configuration.js";
 import { GitHub, PullRequestDetail } from "./github.js";
 import * as github from "./github.js";
 import * as where from "./where.js";

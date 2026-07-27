@@ -1,37 +1,24 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
-
-import { vi } from "vitest";
-import * as github from "@actions/github";
-
 import { getConfigurations } from "./configuration.js";
-
-vi.mock("@actions/core");
-vi.mock("@actions/github");
-
-const gh = github.getOctokit("_");
-const reposMock = vi.spyOn(gh.rest.repos, "getContent");
+import { MockGitHub } from "./github.js";
 
 describe("getConfigurations", () => {
   it("loads a basic configuration", async () => {
-    const yaml = [
-      "README:",
-      "  where:",
-      "    path:",
-      "      matches: README.md",
-      "  body: |",
-      "    Comment body",
-      "",
-    ].join("\n");
-
-    reposMock
-      .mockResolvedValueOnce(<any>{
-        // request for config file
-        data: { type: "file", content: yaml, encoding: "utf8" },
-      })
-      .mockResolvedValueOnce(<any>{
-        // request for body-file prefix
-        data: [],
-      });
+    const gh = new MockGitHub(
+      new Map([
+        [
+          ".github/commenter.yml",
+          [
+            "README:",
+            "  where:",
+            "    path:",
+            "      matches: README.md",
+            "  body: |",
+            "    Comment body",
+            "",
+          ].join("\n"),
+        ],
+      ]),
+    );
 
     const config = await getConfigurations(
       gh,
@@ -49,27 +36,21 @@ describe("getConfigurations", () => {
   });
 
   it("loads an implicit body-file", async () => {
-    const yaml = [
-      "README:",
-      "  where:",
-      "    path:",
-      "      matches: README.md",
-      "",
-    ].join("\n");
-
-    reposMock
-      .mockResolvedValueOnce(<any>{
-        // request for config file
-        data: { type: "file", content: yaml, encoding: "utf8" },
-      })
-      .mockResolvedValueOnce(<any>{
-        // request for body-file prefix
-        data: [{ type: "file", path: ".github/commenter/README.md" }],
-      })
-      .mockResolvedValueOnce(<any>{
-        // request for body-file itself
-        data: { type: "file", content: "Comment body\n", encoding: "utf8" },
-      });
+    const gh = new MockGitHub(
+      new Map([
+        [
+          ".github/commenter.yml",
+          [
+            "README:",
+            "  where:",
+            "    path:",
+            "      matches: README.md",
+            "",
+          ].join("\n"),
+        ],
+        [".github/commenter/README.md", "Comment body\n"],
+      ]),
+    );
 
     const config = await getConfigurations(
       gh,
