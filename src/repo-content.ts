@@ -21,7 +21,10 @@ export async function fetchRepoContent(
     path,
   });
 
+  core.info("fetched");
+
   const repoPath = response.data as RepoPath;
+  core.info("repoPath");
   return Buffer.from(repoPath.content, repoPath.encoding).toString();
 }
 
@@ -55,7 +58,9 @@ export async function listRepoContent(
       core.info(`Fetching file content for ${entry.path}`);
       // Return relative paths, mainly because that's more useful for us
       const content = await fetchRepoContent(client, entry.path);
+      core.info("got content");
       const name = entry.path.replace(prefixRe, "");
+      core.info("got name");
       core.info(`Setting ${name}`);
       paths.set(name, content);
     } else {
