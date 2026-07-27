@@ -1,3 +1,5 @@
+import { getOctokit } from "@actions/github";
+
 export type PullRequestDetail = {
   number: number;
   author: string | null;
@@ -75,7 +77,7 @@ export async function listRepoContent(
   return paths;
 }
 
-export type ClientType = ReturnType<typeof gh.getOctokit>;
+export type ClientType = ReturnType<typeof getOctokit>;
 
 export type GitHubUser = {
   login: string;
