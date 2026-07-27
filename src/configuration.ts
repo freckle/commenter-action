@@ -28,7 +28,7 @@ export async function getConfigurations(
     bodyFilePrefix,
   );
 
-  core.info(`Found ${bodyFiles.size} body file(s) in prefix`);
+  core.debug(`Found ${bodyFiles.size} body file(s) in prefix`);
 
   const map = loadConfigationYaml(configurationContent);
   return await fromConfigurationYaml(client, bodyFiles, map);
@@ -67,7 +67,7 @@ async function fromConfigurationYaml(
 
   // Add any frontmatter files
   fromFrontmatters(bodyFiles).forEach((x) => {
-    core.info(`Adding configuration from frontmatter: ${x.name}`);
+    core.debug(`Adding configuration from frontmatter: ${x.name}`);
     configs.push(x);
   });
 
@@ -82,13 +82,13 @@ async function fromConfigurationBody(
 ): Promise<string | undefined> {
   // body given in yaml, use it
   if (config.body) {
-    core.info("Using in-config body");
+    core.debug("Using in-config body");
     return config.body;
   }
 
   // body-file given, may be anywhere in repository, fetch it
   if (config["body-file"]) {
-    core.info(`Fetching ${config["body-file"]}`);
+    core.debug(`Fetching ${config["body-file"]}`);
     return await fetchRepoContent(client, config["body-file"]);
   }
 
@@ -96,7 +96,7 @@ async function fromConfigurationBody(
   // it up in the map we already have (ignore if not found)
   const bodyFileName = config["body-file-name"] ?? `${name}.md`;
 
-  core.info(`Looking up ${bodyFileName} in prefix`);
+  core.debug(`Looking up ${bodyFileName} in prefix`);
   return bodyFiles.get(bodyFileName);
 }
 

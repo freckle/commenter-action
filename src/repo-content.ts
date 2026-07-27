@@ -13,7 +13,7 @@ export async function fetchRepoContent(
   client: ClientType,
   path: string,
 ): Promise<string> {
-  core.info(`[github] Fetching file content ${path}`);
+  core.debug(`[github] Fetching file content ${path}`);
   const response = await client.rest.repos.getContent({
     owner: github.context.repo.owner,
     repo: github.context.repo.repo,
@@ -37,7 +37,7 @@ export async function listRepoContent(
   const prefix = dir.replace(/\/$/, ""); // drop any trailing slash
   const prefixRe = new RegExp(`^${prefix}/`); // strip including trailing slash
 
-  core.info(`[github] Listing directory content ${prefix}`);
+  core.debug(`[github] Listing directory content ${prefix}`);
   const response = await client.rest.repos.getContent({
     owner: github.context.repo.owner,
     repo: github.context.repo.repo,
@@ -62,6 +62,6 @@ export async function listRepoContent(
     }),
   );
 
-  core.info(`Listed ${paths.size} file(s) from ${entries.length} entries`);
+  core.debug(`Listed ${paths.size} file(s) from ${entries.length} entries`);
   return paths;
 }

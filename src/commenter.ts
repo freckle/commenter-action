@@ -58,10 +58,10 @@ function getMatchingBodies(
   const bodies: string[] = [];
 
   configs.forEach((config) => {
-    core.info(`Checking ${config.name}...`);
+    core.debug(`Checking ${config.name}...`);
 
     if (where.matches(changes, config.where)) {
-      core.info("matched");
+      core.debug("matched");
       bodies.push(config.body);
     }
   });
