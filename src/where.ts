@@ -1,6 +1,6 @@
 import { Minimatch } from "minimatch";
 
-import type { Changes } from "./changes.js"
+import { PullRequestDetail } from "./github.js";
 
 export type ConfigurationWhereClause = {
   path: {
@@ -21,7 +21,7 @@ export type ConfigurationWhereClause = {
 };
 
 export function matches(
-  changes: Changes,
+  changes: PullRequestDetail,
   where: ConfigurationWhereClause,
 ): boolean {
   const { changedFiles, author, labels } = changes;
@@ -40,13 +40,12 @@ export function matches(
   });
 
   const hasAuthorMatch =
-    !where.author ||
-    (author !== undefined && where.author.any.includes(author));
+    !where.author || (author && where.author.any.includes(author));
 
   const hasLabelMatch =
     !where.labels || labels.some((label) => where.labels?.any.includes(label));
 
-  return hasFileMatch && hasAuthorMatch && hasLabelMatch;
+  return !!(hasFileMatch && hasAuthorMatch && hasLabelMatch);
 }
 
 type Patch = {

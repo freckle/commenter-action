@@ -1,41 +1,23 @@
 import * as core from "@actions/core";
-import * as github from "@actions/github";
 
-import { type Changes, getChanges } from "./changes.js";
 import { type Configuration, getConfigurations } from "./configuration.js";
+import { GitHub, PullRequestDetail } from "./github.js";
+import * as github from "./github.js";
 import * as where from "./where.js";
 
-type ClientType = ReturnType<typeof github.getOctokit>;
-
-export async function run() {
+export async function run(gh: GitHub) {
   try {
-    const token = core.getInput("repo-token", { required: true });
+    // const token = core.getInput("repo-token", { required: true });
     const configPath = core.getInput("configuration-path", { required: true });
     const bodyFilePrefix = core.getInput("body-file-prefix", {
       required: true,
     });
     const onMultiMatch = core.getInput("on-multi-match", { required: true });
 
-    const client: ClientType = github.getOctokit(token);
-
-    const configs = await getConfigurations(client, configPath, bodyFilePrefix);
-    const changes = await getChanges(client);
-
-    configs.forEach((config) => {
-      core.info(`${config.name} => ${JSON.stringify(config.where)}`);
-    });
-
-    core.info(`change author: ${changes.author}`);
-    core.info(`change labels: ${changes.labels.join(", ")}`);
-
-    changes.changedFiles.forEach((file) => {
-      core.info(`changed file: ${file.filename}`);
-    });
-
-    const bodies = getMatchingBodies(configs, changes);
-    core.info(`Found ${bodies.length} matching stanza(s)`);
-
-    addCommentBodies(client, onMultiMatch, bodies);
+    const pr = await github.fetchPullRequestDetail(gh, 42); // TODO
+    const configs = await getConfigurations(gh, configPath, bodyFilePrefix);
+    const bodies = getMatchingBodies(configs, pr);
+    addCommentBodies(gh, onMultiMatch, bodies);
   } catch (error) {
     // Refine unknown type
     if (error instanceof Error) {
@@ -53,15 +35,12 @@ export async function run() {
 
 function getMatchingBodies(
   configs: Configuration[],
-  changes: Changes,
+  changes: PullRequestDetail,
 ): string[] {
   const bodies: string[] = [];
 
   configs.forEach((config) => {
-    core.debug(`Checking ${config.name}...`);
-
     if (where.matches(changes, config.where)) {
-      core.debug("matched");
       bodies.push(config.body);
     }
   });
@@ -70,19 +49,14 @@ function getMatchingBodies(
 }
 
 async function addCommentBodies(
-  client: ClientType,
+  gh: GitHub,
   onMultiMatch: string,
   bodies: string[],
 ): Promise<void> {
   const addComments = async (bodies: string[]): Promise<void> => {
     await Promise.all(
       bodies.map(async (body) => {
-        await client.rest.issues.createComment({
-          owner: github.context.repo.owner,
-          repo: github.context.repo.repo,
-          issue_number: github.context.issue.number,
-          body,
-        });
+        await github.createIssueComment(gh, 42, body); // TODO
       }),
     );
   };
