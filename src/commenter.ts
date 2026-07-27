@@ -90,7 +90,7 @@ async function addCommentBodies(
   if (bodies.length > 0) {
     switch (onMultiMatch) {
       case "all":
-        core.info(`Adding ${bodies.length} matching comment(s)`);
+        core.info(`Adding all ${bodies.length} matching comment(s)`);
         await addComments(bodies);
         break;
       case "first":
