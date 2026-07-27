@@ -31,6 +31,14 @@ export async function fetchPullRequestDetail(
   };
 }
 
+export async function createIssueComment(
+  github: GitHub,
+  number: number,
+  body: string,
+): Promise<void> {
+  github.createIssueComment(number, body);
+}
+
 export async function fetchRepoContent(
   github: GitHub,
   ref: string,
@@ -101,6 +109,7 @@ export type GitHubFile = {
 export interface GitHub {
   getPullRequest: (number: number) => Promise<GitHubPullRequest>;
   listPullRequestFiles: (number: number) => Promise<GitHubPullRequestFile[]>;
+  createIssueComment: (number: number, body: string) => Promise<void>;
   getFile: (ref: string, path: string) => Promise<GitHubFile>;
   listDirectory: (ref: string, path: string) => Promise<GitHubEntry[]>;
 }
@@ -134,6 +143,15 @@ export class RealGitHub {
     });
 
     return await this.client.paginate(options);
+  }
+
+  async createIssueComment(number: number, body: string): Promise<void> {
+    await this.client.rest.issues.createComment({
+      owner: this.owner,
+      repo: this.repo,
+      issue_number: number,
+      body,
+    });
   }
 
   async getFile(ref: string, path: string): Promise<GitHubFile> {
@@ -173,6 +191,10 @@ export class MockGitHub {
   async listPullRequestFiles(
     _number: number,
   ): Promise<GitHubPullRequestFile[]> {
+    throw new Error("Unimplemented");
+  }
+
+  async createIssueComment(_number: number, _body: string): Promise<void> {
     throw new Error("Unimplemented");
   }
 
