@@ -28,6 +28,8 @@ export async function getConfigurations(
     bodyFilePrefix,
   );
 
+  core.info(`Found ${bodyFiles.size} body file(s) in prefix`);
+
   const map = loadConfigationYaml(configurationContent);
   return await fromConfigurationYaml(client, bodyFiles, map);
 }
@@ -82,17 +84,21 @@ async function fromConfigurationBody(
 ): Promise<string | undefined> {
   // body given in yaml, use it
   if (config.body) {
+    core.info("Using in-config body");
     return config.body;
   }
 
   // body-file given, may be anywhere in repository, fetch it
   if (config["body-file"]) {
+    core.info(`Fetching ${config["body-file"]}`);
     return await fetchRepoContent(client, config["body-file"]);
   }
 
   // body-file-name (or default) is expected in the prefix directory, look
   // it up in the map we already have (ignore if not found)
   const bodyFileName = config["body-file-name"] ?? `${name}.md`;
+
+  core.info(`Looking up ${bodyFileName} in prefix`);
   return bodyFiles.get(bodyFileName);
 }
 
