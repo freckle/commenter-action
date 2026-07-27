@@ -61,17 +61,15 @@ async function fromConfigurationYaml(
     if (body) {
       configs.push({ name, where: config.where, body });
     } else {
-      core.warning(
-        `Configuration ${name} without body will be ignored:\n${JSON.stringify({
-          "body-file-name": config["body-file-name"],
-          "body-file": config["body-file"],
-        })}`,
-      );
+      core.warning(`Configuration ${name} without body will be ignored`);
     }
   }
 
   // Add any frontmatter files
-  fromFrontmatters(bodyFiles).forEach((x) => configs.push(x));
+  fromFrontmatters(bodyFiles).forEach((x) => {
+    core.info(`Adding configuration from frontmatter: ${x.name}`);
+    configs.push(x);
+  });
 
   return configs;
 }

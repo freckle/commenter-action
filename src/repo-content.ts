@@ -52,9 +52,12 @@ export async function listRepoContent(
     if (entry.type === "file") {
       // Return relative paths, mainly because that's more useful for us
       const content = await fetchRepoContent(client, entry.path);
-      paths.set(entry.path.replace(prefixRe, ""), content);
+      const name = entry.path.replace(prefixRe, "");
+      core.info(`Setting ${name}`);
+      paths.set(name, content);
     }
   });
 
+  core.info(`Listed ${paths.size} contents`);
   return paths;
 }
