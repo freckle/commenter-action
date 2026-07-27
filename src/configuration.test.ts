@@ -3,11 +3,7 @@
 import { vi } from "vitest";
 import * as github from "@actions/github";
 
-import {
-  type ConfigurationYaml,
-  loadConfigationYaml,
-  getConfigurations,
-} from "./configuration.js";
+import { loadConfigationYaml, getConfigurations } from "./configuration.js";
 
 vi.mock("@actions/core");
 vi.mock("@actions/github");

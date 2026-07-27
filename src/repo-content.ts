@@ -55,6 +55,10 @@ export async function listRepoContent(
       const name = entry.path.replace(prefixRe, "");
       core.info(`Setting ${name}`);
       paths.set(name, content);
+    } else {
+      core.warning(
+        `Skipping non-file entry: ${entry.type}\n${JSON.stringify(entry)}`,
+      );
     }
   });
 
