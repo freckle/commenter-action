@@ -19,10 +19,18 @@ export async function run() {
     const client: ClientType = github.getOctokit(token);
 
     const configs = await getConfigurations(client, configPath, bodyFilePrefix);
-    core.debug(`configs: ${JSON.stringify(configs)}`);
-
     const changes = await getChanges(client);
-    core.debug(`changes: ${JSON.stringify(changes)}`);
+
+    configs.forEach((config) => {
+      core.info(`${config.name} => ${JSON.stringify(config.where)}`);
+    });
+
+    core.info(`change author: ${changes.author}`);
+    core.info(`change labels: ${changes.labels.join(", ")}`);
+
+    changes.changedFiles.forEach((file) => {
+      core.info(`changed file: ${file.filename}`);
+    });
 
     const bodies = getMatchingBodies(configs, changes);
     core.info(`Found ${bodies.length} matching stanza(s)`);
@@ -50,7 +58,10 @@ function getMatchingBodies(
   const bodies: string[] = [];
 
   configs.forEach((config) => {
+    core.info(`Checking ${config.name}...`);
+
     if (where.matches(changes, config.where)) {
+      core.info("matched");
       bodies.push(config.body);
     }
   });

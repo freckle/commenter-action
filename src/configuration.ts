@@ -7,6 +7,7 @@ import { ConfigurationWhereClause } from "./where.js";
 type ClientType = ReturnType<typeof github.getOctokit>;
 
 export type Configuration = {
+  name: string;
   where: ConfigurationWhereClause;
   body: string;
 };
@@ -49,7 +50,7 @@ async function fromConfigurationYaml(
     const body = await fromConfigurationBody(client, bodyFiles, name, config);
 
     if (body) {
-      configs.push({ where: config.where, body });
+      configs.push({ name, where: config.where, body });
     }
   }
 
@@ -84,12 +85,13 @@ async function fromConfigurationBody(
 function fromFrontmatters(bodyFiles: Map<string, string>): Configuration[] {
   const configs: Configuration[] = [];
 
-  for (const content of bodyFiles.values()) {
+  for (const [path, content] of bodyFiles.entries()) {
+    const name = `${path.replace(/\.md$/, "")}`;
     const { frontMatter, body } = splitFrontMatter(content);
 
     if (frontMatter) {
       const raw = yaml.load(frontMatter) as ConfigurationYaml;
-      configs.push({ where: raw.where, body });
+      configs.push({ name, where: raw.where, body });
     }
   }
 

@@ -41,6 +41,45 @@ describe("getConfigurations", () => {
 
     expect(config).toEqual([
       {
+        name: "README",
+        where: { path: { matches: "README.md" } },
+        body: "Comment body\n",
+      },
+    ]);
+  });
+
+  it("loads an implicit body-file", async () => {
+    const yaml = [
+      "README:",
+      "  where:",
+      "    path:",
+      "      matches: README.md",
+      "",
+    ].join("\n");
+
+    reposMock
+      .mockResolvedValueOnce(<any>{
+        // request for config file
+        data: { type: "file", content: yaml, encoding: "utf8" },
+      })
+      .mockResolvedValueOnce(<any>{
+        // request for body-file prefix
+        data: [{ type: "file", path: ".github/commenter/README.md" }],
+      })
+      .mockResolvedValueOnce(<any>{
+        // request for body-file itself
+        data: { type: "file", content: "Comment body\n", encoding: "utf8" },
+      });
+
+    const config = await getConfigurations(
+      gh,
+      ".github/commenter.yml",
+      ".github/commenter/",
+    );
+
+    expect(config).toEqual([
+      {
+        name: "README",
         where: { path: { matches: "README.md" } },
         body: "Comment body\n",
       },
