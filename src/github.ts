@@ -126,13 +126,13 @@ export class RealGitHub {
   }
 
   async getPullRequest(number: number): Promise<GitHubPullRequest> {
-    const { data: pullRequest } = await this.client.rest.pulls.get({
+    const response = await this.client.rest.pulls.get({
       owner: this.owner,
       repo: this.repo,
       pull_number: number,
     });
 
-    return pullRequest;
+    return response.data;
   }
 
   async listPullRequestFiles(number: number): Promise<GitHubPullRequestFile[]> {
