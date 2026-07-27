@@ -52,6 +52,7 @@ export async function listRepoContent(
 
   await entries.forEach(async (entry: RepoPathEntry) => {
     if (entry.type === "file") {
+      core.info(`Fetching file content for ${entry.path}`);
       // Return relative paths, mainly because that's more useful for us
       const content = await fetchRepoContent(client, entry.path);
       const name = entry.path.replace(prefixRe, "");
