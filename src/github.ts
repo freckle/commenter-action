@@ -1,5 +1,36 @@
 import * as gh from "@actions/github";
 
+export type PullRequestDetail = {
+  author: string | null;
+  labels: string[];
+  changedFiles: PullRequestFile[];
+};
+
+export type PullRequestFile = {
+  filename: string;
+  patch: string; // may be empty
+};
+
+export async function fetchPullRequestDetail(
+  github: GitHub,
+  number: number,
+): Promise<PullRequestDetail> {
+  const pr = await github.getPullRequest(number);
+  const prFiles = await github.listPullRequestFiles(number);
+  const files = prFiles.map((file) => {
+    return {
+      filename: file.filename,
+      patch: file.patch ?? "",
+    };
+  });
+
+  return {
+    author: pr.user?.login ?? null,
+    labels: pr.labels.map((label) => label.name),
+    changedFiles: files,
+  };
+}
+
 export async function fetchRepoContent(
   github: GitHub,
   ref: string,
@@ -38,6 +69,24 @@ export async function listRepoContent(
 
 export type ClientType = ReturnType<typeof gh.getOctokit>;
 
+export type GitHubUser = {
+  login: string;
+};
+
+export type GitHubLabel = {
+  name: string;
+};
+
+export type GitHubPullRequest = {
+  user: GitHubUser | null | undefined;
+  labels: GitHubLabel[];
+};
+
+export type GitHubPullRequestFile = {
+  filename: string;
+  patch: string | null | undefined;
+};
+
 export type GitHubEntry = {
   type: string;
   path: string;
@@ -50,6 +99,8 @@ export type GitHubFile = {
 };
 
 export interface GitHub {
+  getPullRequest: (number: number) => Promise<GitHubPullRequest>;
+  listPullRequestFiles: (number: number) => Promise<GitHubPullRequestFile[]>;
   getFile: (ref: string, path: string) => Promise<GitHubFile>;
   listDirectory: (ref: string, path: string) => Promise<GitHubEntry[]>;
 }
@@ -63,6 +114,26 @@ export class RealGitHub {
     this.client = client;
     this.owner = owner;
     this.repo = repo;
+  }
+
+  async getPullRequest(number: number): Promise<GitHubPullRequest> {
+    const { data: pullRequest } = await this.client.rest.pulls.get({
+      owner: this.owner,
+      repo: this.repo,
+      pull_number: number,
+    });
+
+    return pullRequest;
+  }
+
+  async listPullRequestFiles(number: number): Promise<GitHubPullRequestFile[]> {
+    const options = this.client.rest.pulls.listFiles.endpoint.merge({
+      owner: this.owner,
+      repo: this.repo,
+      pull_number: number,
+    });
+
+    return await this.client.paginate(options);
   }
 
   async getFile(ref: string, path: string): Promise<GitHubFile> {
@@ -93,6 +164,16 @@ export class MockGitHub {
 
   constructor(contents?: Map<string, string>) {
     this.contents = contents ?? new Map();
+  }
+
+  async getPullRequest(_number: number): Promise<GitHubPullRequest> {
+    throw new Error("Unimplemented");
+  }
+
+  async listPullRequestFiles(
+    _number: number,
+  ): Promise<GitHubPullRequestFile[]> {
+    throw new Error("Unimplemented");
   }
 
   async getFile(ref: string, path: string): Promise<GitHubFile> {
