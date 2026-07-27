@@ -34,16 +34,14 @@ export async function getConfigurations(
   return await fromConfigurationYaml(client, bodyFiles, map);
 }
 
-export type ConfigurationYaml = {
+type ConfigurationYaml = {
   body: string | undefined;
   "body-file": string | undefined;
   "body-file-name": string | undefined;
   where: ConfigurationWhereClause;
 };
 
-export function loadConfigationYaml(
-  content: string,
-): Map<string, ConfigurationYaml> {
+function loadConfigationYaml(content: string): Map<string, ConfigurationYaml> {
   const obj = yaml.load(content) as object;
   return new Map(Object.entries(obj));
 }
