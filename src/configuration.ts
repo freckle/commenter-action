@@ -14,22 +14,11 @@ export type Configuration = {
 export async function getConfigurations(
   gh: GitHub,
   ref: string,
-  configurationPath: string,
-  bodyFilePrefix: string,
+  content: string,
+  bodyFiles: Map<string, string>,
 ): Promise<Configuration[]> {
-  const configurationContent: string = await github.fetchRepoContent(
-    gh,
-    ref,
-    configurationPath,
-  );
-
-  const bodyFiles: Map<string, string> = await github.listRepoContent(
-    gh,
-    ref,
-    bodyFilePrefix,
-  );
-
-  const map = loadConfigationYaml(configurationContent);
+  const obj = yaml.load(content) as object;
+  const map = new Map(Object.entries(obj));
   return await fromConfigurationYaml(gh, ref, bodyFiles, map);
 }
 
@@ -39,11 +28,6 @@ type ConfigurationYaml = {
   "body-file-name": string | undefined;
   where: ConfigurationWhereClause;
 };
-
-function loadConfigationYaml(content: string): Map<string, ConfigurationYaml> {
-  const obj = yaml.load(content) as object;
-  return new Map(Object.entries(obj));
-}
 
 async function fromConfigurationYaml(
   gh: GitHub,

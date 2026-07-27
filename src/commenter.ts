@@ -1,8 +1,8 @@
 import * as core from "@actions/core";
 
-import { Configuration, getConfigurations } from "./configuration.js";
-import { Inputs, getInputs } from "./inputs.js";
-import { GitHub, PullRequestDetail } from "./github.js";
+import { getConfigurations } from "./configuration.js";
+import { Inputs } from "./inputs.js";
+import { GitHub } from "./github.js";
 import * as github from "./github.js";
 import * as where from "./where.js";
 
@@ -12,59 +12,35 @@ export async function run(
   ref: string,
   prNumber: number,
 ) {
+  const { configurationPath, bodyFilePrefix, onMultiMatch } = inputs;
+
   const pr = await github.fetchPullRequestDetail(gh, prNumber);
-  const configs = await getConfigurations(
-    gh,
-    ref,
-    inputs.configurationPath,
-    inputs.bodyFilePrefix,
-  );
-  const bodies = getMatchingBodies(configs, pr);
-  addCommentBodies(gh, pr.number, inputs.onMultiMatch, bodies);
-}
+  const bodyFiles = await github.listRepoContent(gh, ref, bodyFilePrefix);
+  const config = await github.fetchRepoContent(gh, ref, configurationPath);
+  const configs = await getConfigurations(gh, ref, config, bodyFiles);
 
-function getMatchingBodies(
-  configs: Configuration[],
-  changes: PullRequestDetail,
-): string[] {
-  const bodies: string[] = [];
-
-  configs.forEach((config) => {
-    if (where.matches(changes, config.where)) {
-      bodies.push(config.body);
-    }
+  const ps: Promise<void>[] = configs.map((config) => {
+    return where.matches(pr, config.where)
+      ? github.createIssueComment(gh, pr.number, config.body)
+      : Promise.resolve();
   });
 
-  return bodies;
-}
-
-async function addCommentBodies(
-  gh: GitHub,
-  prNumber: number,
-  onMultiMatch: string,
-  bodies: string[],
-): Promise<void> {
-  const addComments = async (bodies: string[]): Promise<void> => {
-    await Promise.all(
-      bodies.map(async (body) => {
-        await github.createIssueComment(gh, prNumber, body);
-      }),
-    );
-  };
-
-  if (bodies.length > 0) {
+  if (ps.length > 0) {
     switch (onMultiMatch) {
       case "all":
-        return await addComments(bodies);
+        await Promise.all(ps);
+        break;
       case "first":
-        return await addComments(bodies.slice(0, 1));
+        await Promise.all(ps.slice(0, 1));
+        break;
       case "last":
-        return await addComments(bodies.slice(-1));
+        await Promise.all(ps.slice(-1));
+        break;
       default:
         core.warning(
           `Invalid on-multi-match (${onMultiMatch}), must be all|first|last.`,
         );
-        await addComments(bodies.slice(0, 1));
+        await Promise.all(ps.slice(0, 1));
     }
   }
 }
