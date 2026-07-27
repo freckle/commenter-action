@@ -179,24 +179,47 @@ export class RealGitHub {
 }
 
 export class MockGitHub {
-  private contents: Map<string, string>;
+  public pullRequests: Map<number, PullRequestDetail> = new Map();
+  public contents: Map<string, string> = new Map();
+  public commentsLeft: string[] = [];
 
-  constructor(contents?: Map<string, string>) {
-    this.contents = contents ?? new Map();
+  async getPullRequest(number: number): Promise<GitHubPullRequest> {
+    const pr = this.pullRequests.get(number);
+
+    if (!pr) {
+      throw new Error(
+        `getPullRequest called with ${number}, which is not known`,
+      );
+    }
+
+    return {
+      number: pr.number,
+      user: pr.author ? { login: pr.author } : null,
+      labels: pr.labels.map((name) => {
+        return { name };
+      }),
+    };
   }
 
-  async getPullRequest(_number: number): Promise<GitHubPullRequest> {
-    throw new Error("Unimplemented");
+  async listPullRequestFiles(number: number): Promise<GitHubPullRequestFile[]> {
+    const pr = this.pullRequests.get(number);
+
+    if (!pr) {
+      throw new Error(
+        `listPullRequestFiles called with ${number}, which is not known`,
+      );
+    }
+
+    return pr.changedFiles.map((file) => {
+      return {
+        filename: file.filename,
+        patch: file.patch,
+      };
+    });
   }
 
-  async listPullRequestFiles(
-    _number: number,
-  ): Promise<GitHubPullRequestFile[]> {
-    throw new Error("Unimplemented");
-  }
-
-  async createIssueComment(_number: number, _body: string): Promise<void> {
-    throw new Error("Unimplemented");
+  async createIssueComment(_number: number, body: string): Promise<void> {
+    this.commentsLeft.push(body);
   }
 
   async getFile(ref: string, path: string): Promise<GitHubFile> {

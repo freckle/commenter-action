@@ -1,41 +1,26 @@
 import * as core from "@actions/core";
 
 import { Configuration, getConfigurations } from "./configuration.js";
+import { Inputs, getInputs } from "./inputs.js";
 import { GitHub, PullRequestDetail } from "./github.js";
 import * as github from "./github.js";
 import * as where from "./where.js";
 
-export async function run(gh: GitHub, ref: string, prNumber: number) {
-  try {
-    // const token = core.getInput("repo-token", { required: true });
-    const configPath = core.getInput("configuration-path", { required: true });
-    const bodyFilePrefix = core.getInput("body-file-prefix", {
-      required: true,
-    });
-    const onMultiMatch = core.getInput("on-multi-match", { required: true });
-
-    const pr = await github.fetchPullRequestDetail(gh, prNumber);
-    const configs = await getConfigurations(
-      gh,
-      ref,
-      configPath,
-      bodyFilePrefix,
-    );
-    const bodies = getMatchingBodies(configs, pr);
-    addCommentBodies(gh, pr.number, onMultiMatch, bodies);
-  } catch (error) {
-    // Refine unknown type
-    if (error instanceof Error) {
-      core.error(error);
-      core.setFailed(error.message);
-    } else if (typeof error === "string") {
-      core.error(error);
-      core.setFailed(error);
-    } else {
-      core.error("Non-Error exception");
-      core.setFailed("Non-Error exception");
-    }
-  }
+export async function run(
+  gh: GitHub,
+  inputs: Inputs,
+  ref: string,
+  prNumber: number,
+) {
+  const pr = await github.fetchPullRequestDetail(gh, prNumber);
+  const configs = await getConfigurations(
+    gh,
+    ref,
+    inputs.configurationPath,
+    inputs.bodyFilePrefix,
+  );
+  const bodies = getMatchingBodies(configs, pr);
+  addCommentBodies(gh, pr.number, inputs.onMultiMatch, bodies);
 }
 
 function getMatchingBodies(
@@ -70,22 +55,15 @@ async function addCommentBodies(
   if (bodies.length > 0) {
     switch (onMultiMatch) {
       case "all":
-        core.info(`Adding all ${bodies.length} matching comment(s)`);
-        await addComments(bodies);
-        break;
+        return await addComments(bodies);
       case "first":
-        core.info(`Adding first of ${bodies.length} matching comment(s)`);
-        await addComments(bodies.slice(0, 1));
-        break;
+        return await addComments(bodies.slice(0, 1));
       case "last":
-        core.info(`Adding last of ${bodies.length} matching comment(s)`);
-        await addComments(bodies.slice(-1));
-        break;
+        return await addComments(bodies.slice(-1));
       default:
         core.warning(
           `Invalid on-multi-match (${onMultiMatch}), must be all|first|last.`,
         );
-        core.info(`Adding first of ${bodies.length} matching comment(s)`);
         await addComments(bodies.slice(0, 1));
     }
   }

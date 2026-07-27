@@ -3,12 +3,9 @@ import * as github from "./github.js";
 
 describe("fetchRepoContent", () => {
   it("fetches a file's content as string", async () => {
-    const gh = new MockGitHub(
-      new Map([
-        ["README.md", "Readme content\n"],
-        ["other.txt", "other content\n"],
-      ]),
-    );
+    const gh = new MockGitHub();
+    gh.contents.set("README.md", "Readme content\n");
+    gh.contents.set("other.txt", "other content\n");
 
     const content = await github.fetchRepoContent(gh, "ref", "README.md");
 
@@ -18,14 +15,11 @@ describe("fetchRepoContent", () => {
 
 describe("listRepoContent", () => {
   it("lists file entries", async () => {
-    const gh = new MockGitHub(
-      new Map([
-        ["README.md", "Readme content\n"],
-        ["dir/this.txt", "this content\n"],
-        ["dir/that.txt", "that content\n"],
-        ["dir/sub/other.txt", "other content\n"],
-      ]),
-    );
+    const gh = new MockGitHub();
+    gh.contents.set("README.md", "Readme content\n");
+    gh.contents.set("dir/this.txt", "this content\n");
+    gh.contents.set("dir/that.txt", "that content\n");
+    gh.contents.set("dir/sub/other.txt", "other content\n");
 
     const paths = await github.listRepoContent(gh, "ref", "dir/");
 
