@@ -21,10 +21,7 @@ export async function fetchRepoContent(
     path,
   });
 
-  core.info("fetched");
-
   const repoPath = response.data as RepoPath;
-  core.info("repoPath");
   return Buffer.from(repoPath.content, repoPath.encoding).toString();
 }
 
@@ -49,29 +46,22 @@ export async function listRepoContent(
   });
 
   const paths = new Map();
-
   const entries = response.data as RepoPathEntry[];
-  core.info(`Listed ${entries.length} entries`);
 
   await Promise.all(
     entries.map(async (entry: RepoPathEntry) => {
-      if (entry.type === "file") {
-        core.info(`Fetching file content for ${entry.path}`);
-        // Return relative paths, mainly because that's more useful for us
-        const content = await fetchRepoContent(client, entry.path);
-        core.info("got content");
-        const name = entry.path.replace(prefixRe, "");
-        core.info("got name");
-        core.info(`Setting ${name}`);
-        paths.set(name, content);
-      } else {
-        core.warning(
-          `Skipping non-file entry: ${entry.type}\n${JSON.stringify(entry)}`,
-        );
+      if (entry.type !== "file") {
+        core.warning(`Non-file entry:\n${JSON.stringify(entry)}`);
+        return;
       }
+
+      // Return relative paths, mainly because that's more useful for us
+      const content = await fetchRepoContent(client, entry.path);
+      const name = entry.path.replace(prefixRe, "");
+      paths.set(name, content);
     }),
   );
 
-  core.info(`Listed ${paths.size} file contents`);
+  core.info(`Listed ${paths.size} file(s) from ${entries.length} entries`);
   return paths;
 }
