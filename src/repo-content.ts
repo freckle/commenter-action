@@ -53,22 +53,24 @@ export async function listRepoContent(
   const entries = response.data as RepoPathEntry[];
   core.info(`Listed ${entries.length} entries`);
 
-  await entries.forEach(async (entry: RepoPathEntry) => {
-    if (entry.type === "file") {
-      core.info(`Fetching file content for ${entry.path}`);
-      // Return relative paths, mainly because that's more useful for us
-      const content = await fetchRepoContent(client, entry.path);
-      core.info("got content");
-      const name = entry.path.replace(prefixRe, "");
-      core.info("got name");
-      core.info(`Setting ${name}`);
-      paths.set(name, content);
-    } else {
-      core.warning(
-        `Skipping non-file entry: ${entry.type}\n${JSON.stringify(entry)}`,
-      );
-    }
-  });
+  await Promise.all(
+    entries.map(async (entry: RepoPathEntry) => {
+      if (entry.type === "file") {
+        core.info(`Fetching file content for ${entry.path}`);
+        // Return relative paths, mainly because that's more useful for us
+        const content = await fetchRepoContent(client, entry.path);
+        core.info("got content");
+        const name = entry.path.replace(prefixRe, "");
+        core.info("got name");
+        core.info(`Setting ${name}`);
+        paths.set(name, content);
+      } else {
+        core.warning(
+          `Skipping non-file entry: ${entry.type}\n${JSON.stringify(entry)}`,
+        );
+      }
+    }),
+  );
 
   core.info(`Listed ${paths.size} file contents`);
   return paths;

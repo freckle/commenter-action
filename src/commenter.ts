@@ -75,14 +75,16 @@ async function addCommentBodies(
   bodies: string[],
 ): Promise<void> {
   const addComments = async (bodies: string[]): Promise<void> => {
-    await bodies.forEach(async (body) => {
-      await client.rest.issues.createComment({
-        owner: github.context.repo.owner,
-        repo: github.context.repo.repo,
-        issue_number: github.context.issue.number,
-        body,
-      });
-    });
+    await Promise.all(
+      bodies.map(async (body) => {
+        await client.rest.issues.createComment({
+          owner: github.context.repo.owner,
+          repo: github.context.repo.repo,
+          issue_number: github.context.issue.number,
+          body,
+        });
+      }),
+    );
   };
 
   if (bodies.length > 0) {
