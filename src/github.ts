@@ -1,6 +1,5 @@
-import * as gh from "@actions/github";
-
 export type PullRequestDetail = {
+  number: number;
   author: string | null;
   labels: string[];
   changedFiles: PullRequestFile[];
@@ -12,11 +11,11 @@ export type PullRequestFile = {
 };
 
 export async function fetchPullRequestDetail(
-  github: GitHub,
+  gh: GitHub,
   number: number,
 ): Promise<PullRequestDetail> {
-  const pr = await github.getPullRequest(number);
-  const prFiles = await github.listPullRequestFiles(number);
+  const pr = await gh.getPullRequest(number);
+  const prFiles = await gh.listPullRequestFiles(number);
   const files = prFiles.map((file) => {
     return {
       filename: file.filename,
@@ -25,6 +24,7 @@ export async function fetchPullRequestDetail(
   });
 
   return {
+    number: pr.number,
     author: pr.user?.login ?? null,
     labels: pr.labels.map((label) => label.name),
     changedFiles: files,
@@ -32,24 +32,24 @@ export async function fetchPullRequestDetail(
 }
 
 export async function createIssueComment(
-  github: GitHub,
+  gh: GitHub,
   number: number,
   body: string,
 ): Promise<void> {
-  github.createIssueComment(number, body);
+  gh.createIssueComment(number, body);
 }
 
 export async function fetchRepoContent(
-  github: GitHub,
+  gh: GitHub,
   ref: string,
   path: string,
 ): Promise<string> {
-  const file = await github.getFile(ref, path);
+  const file = await gh.getFile(ref, path);
   return Buffer.from(file.content, file.encoding).toString();
 }
 
 export async function listRepoContent(
-  github: GitHub,
+  gh: GitHub,
   ref: string,
   dir: string,
 ): Promise<Map<string, string>> {
@@ -57,7 +57,7 @@ export async function listRepoContent(
   const prefixRe = new RegExp(`^${prefix}/`); // strip including trailing slash
 
   const paths = new Map();
-  const entries = await github.listDirectory(ref, prefix);
+  const entries = await gh.listDirectory(ref, prefix);
 
   await Promise.all(
     entries.map(async (entry: GitHubEntry) => {
@@ -67,7 +67,7 @@ export async function listRepoContent(
 
       // Return relative paths, mainly because that's more useful for us
       const name = entry.path.replace(prefixRe, "");
-      const content = await fetchRepoContent(github, ref, entry.path);
+      const content = await fetchRepoContent(gh, ref, entry.path);
       paths.set(name, content);
     }),
   );
@@ -86,6 +86,7 @@ export type GitHubLabel = {
 };
 
 export type GitHubPullRequest = {
+  number: number;
   user: GitHubUser | null | undefined;
   labels: GitHubLabel[];
 };

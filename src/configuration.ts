@@ -13,23 +13,24 @@ export type Configuration = {
 
 export async function getConfigurations(
   gh: GitHub,
+  ref: string,
   configurationPath: string,
   bodyFilePrefix: string,
 ): Promise<Configuration[]> {
   const configurationContent: string = await github.fetchRepoContent(
     gh,
-    "TODO",
+    ref,
     configurationPath,
   );
 
   const bodyFiles: Map<string, string> = await github.listRepoContent(
     gh,
-    "TODO",
+    ref,
     bodyFilePrefix,
   );
 
   const map = loadConfigationYaml(configurationContent);
-  return await fromConfigurationYaml(gh, bodyFiles, map);
+  return await fromConfigurationYaml(gh, ref, bodyFiles, map);
 }
 
 type ConfigurationYaml = {
@@ -46,13 +47,14 @@ function loadConfigationYaml(content: string): Map<string, ConfigurationYaml> {
 
 async function fromConfigurationYaml(
   gh: GitHub,
+  ref: string,
   bodyFiles: Map<string, string>,
   raw: Map<string, ConfigurationYaml>,
 ): Promise<Configuration[]> {
   const configs: Configuration[] = [];
 
   for (const [name, config] of raw.entries()) {
-    const body = await fromConfigurationBody(gh, bodyFiles, name, config);
+    const body = await fromConfigurationBody(gh, ref, bodyFiles, name, config);
 
     if (body) {
       configs.push({ name, where: config.where, body });
@@ -71,6 +73,7 @@ async function fromConfigurationYaml(
 
 async function fromConfigurationBody(
   gh: GitHub,
+  ref: string,
   bodyFiles: Map<string, string>,
   name: string,
   config: ConfigurationYaml,
@@ -82,7 +85,7 @@ async function fromConfigurationBody(
 
   // body-file given, may be anywhere in repository, fetch it
   if (config["body-file"]) {
-    return await github.fetchRepoContent(gh, "TODO", config["body-file"]);
+    return await github.fetchRepoContent(gh, ref, config["body-file"]);
   }
 
   // body-file-name (or default) is expected in the prefix directory, look

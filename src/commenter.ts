@@ -5,7 +5,7 @@ import { GitHub, PullRequestDetail } from "./github.js";
 import * as github from "./github.js";
 import * as where from "./where.js";
 
-export async function run(gh: GitHub) {
+export async function run(gh: GitHub, ref: string, prNumber: number) {
   try {
     // const token = core.getInput("repo-token", { required: true });
     const configPath = core.getInput("configuration-path", { required: true });
@@ -14,10 +14,15 @@ export async function run(gh: GitHub) {
     });
     const onMultiMatch = core.getInput("on-multi-match", { required: true });
 
-    const pr = await github.fetchPullRequestDetail(gh, 42); // TODO
-    const configs = await getConfigurations(gh, configPath, bodyFilePrefix);
+    const pr = await github.fetchPullRequestDetail(gh, prNumber);
+    const configs = await getConfigurations(
+      gh,
+      ref,
+      configPath,
+      bodyFilePrefix,
+    );
     const bodies = getMatchingBodies(configs, pr);
-    addCommentBodies(gh, onMultiMatch, bodies);
+    addCommentBodies(gh, pr.number, onMultiMatch, bodies);
   } catch (error) {
     // Refine unknown type
     if (error instanceof Error) {
@@ -50,13 +55,14 @@ function getMatchingBodies(
 
 async function addCommentBodies(
   gh: GitHub,
+  prNumber: number,
   onMultiMatch: string,
   bodies: string[],
 ): Promise<void> {
   const addComments = async (bodies: string[]): Promise<void> => {
     await Promise.all(
       bodies.map(async (body) => {
-        await github.createIssueComment(gh, 42, body); // TODO
+        await github.createIssueComment(gh, prNumber, body);
       }),
     );
   };

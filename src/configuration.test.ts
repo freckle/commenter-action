@@ -22,6 +22,7 @@ describe("getConfigurations", () => {
 
     const config = await getConfigurations(
       gh,
+      "ref",
       ".github/commenter.yml",
       ".github/commenter/",
     );
@@ -54,6 +55,7 @@ describe("getConfigurations", () => {
 
     const config = await getConfigurations(
       gh,
+      "ref",
       ".github/commenter.yml",
       ".github/commenter/",
     );
