@@ -48,6 +48,8 @@ export async function listRepoContent(
   const paths = new Map();
 
   const entries = response.data as RepoPathEntry[];
+  core.info(`Listed ${entries.length} entries`);
+
   await entries.forEach(async (entry: RepoPathEntry) => {
     if (entry.type === "file") {
       // Return relative paths, mainly because that's more useful for us
@@ -62,6 +64,6 @@ export async function listRepoContent(
     }
   });
 
-  core.info(`Listed ${paths.size} contents`);
+  core.info(`Listed ${paths.size} file contents`);
   return paths;
 }
