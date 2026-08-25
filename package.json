@@ -28,7 +28,6 @@
     "@eslint/js": "^10.0.1",
     "@octokit/plugin-rest-endpoint-methods": "^18.0.0",
     "@types/js-yaml": "^4.0.9",
-    "@types/minimatch": "^6.0.0",
     "@types/node": "^24.13.3",
     "@vercel/ncc": "^0.45.0",
     "action-docs": "^2.5.1",
