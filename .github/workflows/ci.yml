@@ -13,21 +13,35 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v7
+      - uses: pnpm/action-setup@v6
       - uses: actions/setup-node@v7
         with:
-          cache: yarn
-          node-version-file: .nvmrc
-      - run: yarn install
-      - run: yarn test
-      - run: yarn build
-      - run: yarn lint
+          cache: pnpm
+          node-version-file: ".nvmrc"
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm format-check
+      - run: pnpm typecheck
+      - run: pnpm lint
+      - run: pnpm knip
+      - run: pnpm coverage
+      - run: pnpm build
+      - uses: actions/upload-artifact@v7
+        with:
+          name: dist
+          path: dist/index.js
 
   integration:
+    # The action comments on a pull request, so it needs a pull request to run against
     if: ${{ github.event_name == 'pull_request' }}
+    needs: build
     runs-on: ubuntu-latest
     permissions:
       contents: read
       pull-requests: write
     steps:
       - uses: actions/checkout@v7
+      - uses: actions/download-artifact@v8
+        with:
+          name: dist
+          path: dist # overwrite dist/index.js
       - uses: ./
