@@ -141,6 +141,38 @@ be changed via `inputs.body-file-prefix`. The complete path, or just the name
 part, can be specified via the `body-file` and `body-file-name` attributes of
 the configuration, respectively.
 
+## Development
+
+- **Package manager**: pnpm (Node version pinned in `.nvmrc`)
+- `pnpm build` — `tsc` then `ncc`, bundles to `dist/index.js`
+- `pnpm test` — Vitest
+- `pnpm coverage` — Vitest with coverage, gated at 70% (`main.ts` excluded: thin wiring, covered by the `integration` CI job instead)
+- `pnpm typecheck` — `tsc --noEmit`, includes test files
+- `pnpm lint` — ESLint
+- `pnpm format` / `pnpm format-check` — Prettier
+- `pnpm knip` — unused files/dependencies/exports
+- CI runs all of the above on every PR, then runs the built action end to end in the `integration` job
+
+## Versioning
+
+Versioned tags will exist, such as `v1.0.0` and `v2.1.1`. Tags will also exist
+for each major version, such as `v1` or `v2` and point to the newest version in
+that series.
+
+## Release
+
+To trigger a release (and update the `@v{major}` tag), merge a commit to `main`
+that follows [Conventional Commits][]. In short,
+
+- `fix:` to trigger a patch release,
+- `feat:` to trigger minor, or
+- `<type>!:` or add a `BREAKING CHANGE:` trailer to trigger major
+
+We don't enforce conventional commits generally (though you are free do so),
+it's only required if you want to trigger release.
+
+[conventional commits]: https://www.conventionalcommits.org/en/v1.0.0/#summary
+
 ## Acknowledgements
 
 This action was highly inspired by (and began as a copy of)
@@ -150,4 +182,4 @@ This action was highly inspired by (and began as a copy of)
 
 ---
 
-[LICENSE](./LICENSE) | [CHANGELOG](./CHANGELOG.md)
+[LICENSE](./LICENSE)
