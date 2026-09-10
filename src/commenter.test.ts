@@ -30,7 +30,7 @@ const yamlFixtures = [
   {} as Record<string, string>
 )
 
-describe('run', () => {
+describe(run.name, () => {
   it('adds comments to PRs that match our glob patterns', async () => {
     usingConfigYaml('only_pdfs.yml')
     mockGitHubResponseChangedFiles('foo.pdf')
