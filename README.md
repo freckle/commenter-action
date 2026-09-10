@@ -149,6 +149,7 @@ the configuration, respectively.
 - `pnpm coverage` — Vitest with coverage, gated at the levels in `vitest.config.js` (`main.ts` excluded: thin wiring, covered by the `integration` CI job instead)
 - `pnpm typecheck` — `tsc --noEmit`, includes test files
 - `pnpm lint` — ESLint
+- `pnpm format` / `pnpm format-check` — Prettier
 - `pnpm knip` — unused files/dependencies/exports
 - CI runs all of the above on every PR, then runs the built action end to end in the `integration` job
 
