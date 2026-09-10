@@ -25,7 +25,7 @@ const yamlFixtures = [
 ].reduce((acc, x) => {
   acc[x] = fs.readFileSync(`src/fixtures/${x}`).toString();
   return acc;
-}, {});
+}, {} as Record<string, string>);
 
 describe("run", () => {
   it("adds comments to PRs that match our glob patterns", async () => {
@@ -216,7 +216,7 @@ function mockGitHubResponseGetContentOnce(content: string): void {
 
 type FileNameOrWithPatch = string | [string, string];
 
-const patchContaining = (t) =>
+const patchContaining = (t: string) =>
   `@@ -132,7 +132,7 @@ module Test @@ -1000,7 +1000,7 @@ ${t}`;
 
 function mockGitHubResponseChangedFiles(...files: FileNameOrWithPatch[]): void {
