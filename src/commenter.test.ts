@@ -4,7 +4,7 @@ import { describe, expect, it, vi } from "vitest";
 import * as github from "@actions/github";
 import * as fs from "fs";
 
-import { run } from "../src/commenter";
+import { run } from "./commenter.js";
 
 vi.mock("@actions/core");
 vi.mock("@actions/github");
@@ -23,7 +23,7 @@ const yamlFixtures = [
   "all_conditions.yml",
   "body_file.yml",
 ].reduce((acc, x) => {
-  acc[x] = fs.readFileSync(`__tests__/fixtures/${x}`).toString();
+  acc[x] = fs.readFileSync(`src/fixtures/${x}`).toString();
   return acc;
 }, {});
 
