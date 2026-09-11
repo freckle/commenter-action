@@ -1,6 +1,6 @@
-import { Changes } from "../src/changes.js";
-import { ConfigurationWhereClause } from "../src/where.js";
-import * as where from "../src/where.js";
+import { Changes } from "./changes.js";
+import { ConfigurationWhereClause } from "./where.js";
+import * as where from "./where.js";
 
 type TestCase = {
   changes: Changes;

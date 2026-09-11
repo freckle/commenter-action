@@ -13,7 +13,7 @@ export type Changes = {
   labels: string[];
 };
 
-export type ChangedFile = { filename: string; patch: string };
+type ChangedFile = { filename: string; patch: string };
 
 export async function getChanges(client: ClientType): Promise<Changes> {
   const { data: pullRequest } = await client.rest.pulls.get({
