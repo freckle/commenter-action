@@ -1,44 +1,41 @@
-import * as github from "@actions/github";
-import * as yaml from "js-yaml";
+import * as github from '@actions/github'
+import * as yaml from 'js-yaml'
 
-import { fetchRepoContent } from "./repo-content.js";
-import { ConfigurationWhereClause } from "./where.js";
+import {fetchRepoContent} from './repo-content.js'
+import {ConfigurationWhereClause} from './where.js'
 
-type ClientType = ReturnType<typeof github.getOctokit>;
+type ClientType = ReturnType<typeof github.getOctokit>
 
 export type Configuration = {
-  body: string | undefined;
-  "body-file": string | undefined;
-  "body-file-name": string | undefined;
-  where: ConfigurationWhereClause;
-};
+  body: string | undefined
+  'body-file': string | undefined
+  'body-file-name': string | undefined
+  where: ConfigurationWhereClause
+}
 
-export type Configurations = Map<string, Configuration>;
+export type Configurations = Map<string, Configuration>
 
 export async function getConfigurations(
   client: ClientType,
-  configurationPath: string,
+  configurationPath: string
 ): Promise<Configurations> {
-  const configurationContent: string = await fetchRepoContent(
-    client,
-    configurationPath,
-  );
+  const configurationContent: string = await fetchRepoContent(client, configurationPath)
 
-  const configObject = yaml.load(configurationContent);
-  return configObject as Configurations;
+  const configObject = yaml.load(configurationContent)
+  return configObject as Configurations
 }
 
 export async function getCommentBody(
   client: ClientType,
   bodyFilePrefix: string,
   name: string,
-  config: Configuration,
+  config: Configuration
 ): Promise<string> {
   if (config.body) {
-    return config.body;
+    return config.body
   } else {
-    const bodyFileName = config["body-file-name"] ?? `${name}.md`;
-    const bodyFile = config["body-file"] ?? `${bodyFilePrefix}${bodyFileName}`;
-    return await fetchRepoContent(client, bodyFile);
+    const bodyFileName = config['body-file-name'] ?? `${name}.md`
+    const bodyFile = config['body-file'] ?? `${bodyFilePrefix}${bodyFileName}`
+    return await fetchRepoContent(client, bodyFile)
   }
 }
